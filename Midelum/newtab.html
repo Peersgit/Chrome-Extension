@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Medilum</title>
+  <link rel="stylesheet" href="newtab.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+  <div id="top-links-container"></div>
+
+  <div class="main-content">
+    <figure id="cube">
+      <div class="face top"><p id="s"></p></div>
+      <div class="face front"><p id="m"></p></div>
+      <div class="face left"><p id="h"></p></div>
+      <div class="face bottom"></div>
+      <div class="face right"></div>
+      <div class="face back"></div>
+    </figure>
+  </div>
+
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Top 50 Visited Sites - Last 30 Days</h2>
+            <a class="close-button" style="cursor: pointer;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </a>
+        </div>
+        <div class="modal-body">
+            
+        </div>
+    </div>
+</div>
+
+<a id="settings" class="settings-button closed"><i class="fa-solid fa-gear"></i></a>
+
+
+
+<div class="settings-container">
+  <div class="exit" id="close-settings">
+    <i class="fa-solid fa-x"></i>
+  </div>
+  <div class="settings-body">
+    <h1 class="s-h">Settings</h1>
+    <div class="setting-row">
+      <span>Remove Fruequently Visited Bar</span>
+      <input type="checkbox" id="freq-v" class="custom-checkbox" name="freq-v" value="fv">
+    </div>
+    <div class="setting-row">
+      <span>Weather</span>
+      <input type="checkbox" id="weather" class="custom-checkbox" name="weather" value="weather">
+    </div>
+  </div>
+</div>
+
+
+<a id="open-weather" class="weather-button futuristic-button">Blank</a>
+
+
+
+<div class="img-stats">
+  <h2 id="photographer" class="photographer">matt mcman</h2>
+  <a id="photographer-url" class="name" target="_blank" href="">Visit this photographers page</a>
+</div>
+
+<div class="weather-card">
+  <div class="header">
+    <div class="location">
+      <h1>New York City</h1>
+      <div class="coordinates">40.7128° N, 74.0060° W</div>
+    </div>
+    <a class="close-button-2" style="cursor: pointer;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </a>
+  </div>
+  <div class="sun-timeline">
+      <div class="stat-label">
+        <div class="sunrise">Sunrise: 6:30 AM</div>
+        <div class="sunset">Sunset: 7:45 PM</div>
+      </div>
+      <div class="timeline-bar">
+          <div class="current-time" style="left: 45%;"></div>
+      </div>
+  </div>
+
+  <div class="main-stats">
+      <div class="stat">
+          <div class="stat-label">Feels Like</div>
+          <div class="stat-value" id="fl">72°F</div>
+      </div>
+      <div class="stat">
+          <div class="stat-label">Humidity</div>
+          <div class="stat-value" id="hum">65%</div>
+      </div>
+      <div class="stat">
+          <div class="stat-label">Pressure</div>
+          <div class="stat-value" id="pres">1015 hPa</div>
+      </div>
+      <div class="stat">
+          <div class="stat-label">Temperature</div>
+          <div class="stat-value" id="temp">75 °F</div>
+      </div>
+      <div class="stat">
+          <div class="stat-label">Max Temp</div>
+          <div class="stat-value" id="max-temp">78°F</div>
+      </div>
+      <div class="stat">
+          <div class="stat-label">Min Temp</div>
+          <div class="stat-value" id="min-temp">70°F</div>
+      </div>
+  </div>
+
+  <div class="stat">
+      <div class="stat-label">Timezone</div>
+      <div class="stat-value" id="tz">EDT (UTC-4)</div>
+  </div>
+  
+</div>
+
+  <script src="newtab.js"></script>
+  
+</body>
+</html>

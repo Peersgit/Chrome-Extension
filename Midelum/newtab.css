@@ -1,0 +1,676 @@
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  color: white;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 0;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+#top-links-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.top-link {
+  width: calc(100% / 10);
+  flex: 0 0 auto;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  gap: 8px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.site-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.top-link span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.top-link:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.clock {
+  font-size: 6rem;
+  margin-bottom: 1rem;
+}
+
+.greeting {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.quote {
+  font-size: 1.2rem;
+  max-width: 600px;
+  text-align: center;
+  font-style: italic;
+  margin-bottom: 2rem;
+}
+
+.futuristic-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.futuristic-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.futuristic-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-body {
+  /* Enable custom scrollbar styling */
+  overflow-y: auto;
+
+  /* Customize the scrollbar track */
+  &::-webkit-scrollbar {
+    width: 8px; /* width of the scrollbar */
+  }
+
+  /* Customize the scrollbar handle/thumb */
+  &::-webkit-scrollbar-thumb {
+    background-color: #e5e7eb; /* color of the scroll thumb */
+  }
+
+  /* Customize the scrollbar track */
+  &::-webkit-scrollbar-track {
+    background: #212121; /* color of the track */
+  }
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #212121;
+  width: 90%;
+  max-width: 600px;
+  min-height: 50vh;
+  max-height: 50vh;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #d9d9d9;
+}
+
+.close {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #6b7280;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin: 4px 0;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.item-row:hover {
+  background-color: #171717;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  color: #6b7280;
+}
+.icon img {
+  width: 16px;
+  height: 16px;
+  margin-right: 12px;
+}
+
+/* For the SVG icons */
+.icon svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 12px;
+}
+
+.item-text {
+  flex: 1;
+  color: #d9d9d9;
+}
+
+.item-number {
+  color: #d9d9d9;
+  font-size: 0.875rem;
+}
+.close-button {
+  cursor: pointer;
+}
+
+/* .location {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+} */
+
+.location h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.coordinates {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.sun-timeline {
+  background: rgba(141, 141, 141, 0.3);
+  padding: 15px;
+  border-radius: 10px;
+  margin: 15px 0;
+}
+
+.timeline-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin: 10px 0;
+  position: relative;
+}
+
+.current-time {
+  width: 10px;
+  height: 10px;
+  background: #ffd700;
+  border-radius: 50%;
+  position: absolute;
+  top: -3px;
+  transform: translateX(-50%);
+}
+
+.main-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.stat {
+  background: rgba(141, 141, 141, 0.3);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.stat-label {
+  font-size: 12px;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.wind-section {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 15px;
+}
+
+.weather-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  text-decoration: none;
+}
+
+.weather-card {
+  font-family: system-ui, -apple-system, sans-serif;
+  width: 25%;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 15px;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: none;
+  position: absolute;
+  bottom: 0px;
+  right: 20px;
+}
+
+.sunrise-gradient {
+  background: linear-gradient(
+    to bottom right,
+    #0c1445 0%,
+    #1b2980 20%,
+    #473b7b 40%,
+    #fc766a 60%,
+    #ffc7a9 80%,
+    #b1d1fc 100%
+  );
+}
+
+/* Midday Gradient (Bright blue sky) */
+.midday-gradient {
+  background: linear-gradient(
+    to bottom right,
+    #4a9ae1 0%,
+    #6bb5ef 25%,
+    #87ceeb 50%,
+    #b5e7f5 75%,
+    #d1f1fa 100%
+  );
+}
+
+/* Sunset Gradient (Afternoon to sunset) */
+.sunset-gradient {
+  background: linear-gradient(
+    to bottom right,
+    #5680e9 0%,
+    #5ab9ea 20%,
+    #f8a978 40%,
+    #ff715b 60%,
+    #ff4962 80%,
+    #c73866 100%
+  );
+}
+
+/* Night Gradient (Evening sky to deep night) */
+.night-gradient {
+  background: linear-gradient(
+    to bottom right,
+    #0c0f2c 0%,
+    #121b44 25%,
+    #1a2456 50%,
+    #0c1445 75%,
+    #05071f 100%
+  );
+}
+
+.img-stats {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  text-align: center;
+}
+
+.name {
+  text-decoration: none;
+  color: #d9d9d9;
+}
+
+.photographer {
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+/* Clock Display */
+@font-face {
+  font-family: "Digital-7";
+  src: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/184191/Digital-7.eot?#iefix")
+      format("embedded-opentype"),
+    url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/184191/Digital-7.woff")
+      format("woff"),
+    url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/184191/Digital-7.ttf")
+      format("truetype"),
+    url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/184191/Digital-7.svg#Digital-7")
+      format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+::selection {
+  background: #333;
+}
+::-moz-selection {
+  background: #111;
+}
+*,
+html {
+  margin: 0;
+}
+body {
+  background: #333;
+}
+figure {
+  width: 210px;
+  height: 210px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -105px;
+  margin-left: -105px;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  -webkit-transform: rotateX(-35deg) rotateY(45deg);
+  transform: rotateX(-35deg) rotateY(45deg);
+  transition: 2s;
+}
+figure:hover {
+  transform: rotateX(-50deg) rotateY(45deg);
+}
+.face {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #000;
+  text-align: center;
+}
+p {
+  font-size: 180px;
+  font-family: "Digital-7";
+  margin-top: 20px;
+  color: rgba(255, 255, 255, 0.5);
+  text-shadow: 
+    /* Text shadow for glow effect */
+    0px 0px 5px #000,
+    /* The following create the border effect with brighter white */
+    -1px -1px 0 rgba(255, 255, 255, 0.8),
+    1px -1px 0 rgba(255, 255, 255, 0.8),
+    -1px 1px 0 rgba(255, 255, 255, 0.8),
+    1px 1px 0 rgba(255, 255, 255, 0.8);
+  -webkit-animation: color 10s infinite;
+  animation: color 10s infinite;
+  line-height: 180px;
+  
+  /* Alternative approach using text-stroke (less supported) */
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
+}
+.front {
+  -webkit-transform: translate3d(0, 0, 105px);
+  transform: translate3d(0, 0, 105px);
+  background: #111;
+}
+.left {
+  -webkit-transform: rotateY(-90deg) translate3d(0, 0, 105px);
+  transform: rotateY(-90deg) translate3d(0, 0, 105px);
+  background: #151515;
+}
+.top {
+  -webkit-transform: rotateX(90deg) translate3d(0, 0, 105px);
+  transform: rotateX(90deg) translate3d(0, 0, 105px);
+  background: #222;
+}
+
+.bottom {
+  -webkit-transform: rotateX(-90deg) translate3d(0, 0, 105px);
+  transform: rotateX(-90deg) translate3d(0, 0, 105px);
+  background: #191919;
+}
+
+.right {
+  -webkit-transform: rotateY(90deg) translate3d(0, 0, 105px);
+  transform: rotateY(90deg) translate3d(0, 0, 105px);
+  background: #151515;
+}
+.back {
+  -webkit-transform: translate3d(0, 0, -105px);
+  transform: translate3d(0, 0, -105px); 
+  background: #111;
+}
+
+
+
+
+.settings-button {
+  position: absolute;
+  bottom: 20px;
+  right: 50%;
+  color: #d9d9d9;
+  text-decoration: none;
+  transition: transform 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+}
+
+.settings-button:hover {
+  color: white;
+  transform: scale(1.2);
+}
+
+.settings-button:hover .settings-button-icon {
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+}
+
+.settings-container {
+  width: 400px;
+  height: 400px;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(23, 23, 23, 0.4);
+  border: 1px solid #dadada8c;
+  border-radius: 10px;
+  z-index: 2;
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.exit {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  color: #d9d9d9;
+  cursor: pointer;
+  font-size: 1.1rem; /* Increase size from default */
+}
+
+.exit i {
+  font-weight: bold; /* Make the icon thicker */
+}
+
+.exit:hover {
+  color: white;
+}
+
+.s-h {
+  padding: 15px;
+  border-bottom: 1px solid #d9d9d95e;
+}
+.setting-row {
+  padding: 10px;
+  background: rgba(23, 23, 23, 0.6);
+  border-bottom: 1px solid #d9d9d95e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d9d9d95e;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  background-color: transparent;
+  position: relative;
+}
+
+.custom-checkbox:checked {
+  background-color: #d9d9d9d3;
+  border-color: #d9d9d9d3;
+}
+
+.custom-checkbox:hover {
+  border-color: #d9d9d9d3;
+}
+/* .custom-checkbox:focus {
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+} */
+
+
+.slide-up-fade-in {
+  animation: slideUpFadeIn 0.5s forwards;
+  transform-origin: bottom;
+  overflow: hidden;
+}
+
+@keyframes slideUpFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.slide-down-fade-out {
+  animation: slideDownFadeOut 0.5s forwards;
+  transform-origin: bottom;
+  overflow: hidden;
+}
+
+@keyframes slideDownFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+/* The base class that will be applied to the element */
+.slide-up-fade-out {
+  animation: slideUpFadeOut 0.5s forwards;
+  transform-origin: top;
+  overflow: hidden;
+}
+
+/* Animation for sliding up and fading out */
+@keyframes slideUpFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+/* Class to be applied when bringing the element back */
+.slide-down-fade-in {
+  animation: slideDownFadeIn 0.5s forwards;
+  transform-origin: top;
+  overflow: hidden;
+}
+
+/* Animation for sliding down and fading in */
+@keyframes slideDownFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

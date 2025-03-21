@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "New Tab Manager",
+    "version": "1.0",
+    "description": "Manage your new tab experience",
+    "permissions": ["management", "storage", "bookmarks", "history", "alarms"],
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "chrome_url_overrides": {
+      "newtab": "newtab.html"
+    },
+    "host_permissions": [
+        "https://api.pexels.com/*"
+    ]
+  }
