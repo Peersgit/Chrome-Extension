@@ -31,6 +31,8 @@ body > * {
   width: 100%;
   display: flex;
   justify-content: space-between;
+  position: absolute;
+  z-index: 2;
 }
 
 .top-link {
@@ -332,53 +334,39 @@ body > * {
   right: 20px;
 }
 
-.sunrise-gradient {
-  background: linear-gradient(
-    to bottom right,
-    #0c1445 0%,
-    #1b2980 20%,
-    #473b7b 40%,
-    #fc766a 60%,
-    #ffc7a9 80%,
-    #b1d1fc 100%
-  );
+.none {
+  border: none;
+  opacity: 0.4;
+}
+.none:checked {
+  background-color: none;
+  border-color: none;
+}  
+.none:hover {
+  border-color: none;
+}
+
+  .sunrise-gradient {
+  --angle: 45deg; 
+  background: linear-gradient(var(--angle), #ff8f8f, #fffc99)
 }
 
 /* Midday Gradient (Bright blue sky) */
 .midday-gradient {
-  background: linear-gradient(
-    to bottom right,
-    #4a9ae1 0%,
-    #6bb5ef 25%,
-    #87ceeb 50%,
-    #b5e7f5 75%,
-    #d1f1fa 100%
-  );
+  --angle: 45deg; 
+  background: linear-gradient(var(--angle), #96dcff, #14a6ef)
 }
 
 /* Sunset Gradient (Afternoon to sunset) */
 .sunset-gradient {
-  background: linear-gradient(
-    to bottom right,
-    #5680e9 0%,
-    #5ab9ea 20%,
-    #f8a978 40%,
-    #ff715b 60%,
-    #ff4962 80%,
-    #c73866 100%
-  );
+  --angle: 45deg; 
+  background: linear-gradient(var(--angle), #fbb03b, #ed1c24)
 }
 
 /* Night Gradient (Evening sky to deep night) */
 .night-gradient {
-  background: linear-gradient(
-    to bottom right,
-    #0c0f2c 0%,
-    #121b44 25%,
-    #1a2456 50%,
-    #0c1445 75%,
-    #05071f 100%
-  );
+  --angle: 45deg; 
+  background: linear-gradient(var(--angle), #1e3c72, #2a5298)
 }
 
 .img-stats {
@@ -547,9 +535,6 @@ p {
 }
 
 .exit {
-  position: absolute;
-  top: 15px;
-  right: 20px;
   color: #d9d9d9;
   cursor: pointer;
   font-size: 1.1rem; /* Increase size from default */
@@ -575,6 +560,12 @@ p {
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
+}
+
+.clock-check {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .custom-checkbox {
@@ -673,4 +664,68 @@ p {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+
+.basic-clock {
+  font-size: 50px;
+  color: white;
+  font-family: monospace;
+  display: flex;
+}
+
+.me-2 {
+  margin-right: 8px;
+}
+
+
+.bookmark-modal {
+  top: 40px;
+  right: 20px;
+  width: 400px;
+  height: 400px;
+  position: absolute;
+  background: rgba(23, 23, 23, 0.4);
+  border: 1px solid #dadada8c;
+  border-radius: 10px;
+  z-index: 3;
+}
+
+
+.drag-bar {
+  width: 100%;
+  box-sizing: border-box; /* This is the key fix */
+  position: relative;
+  background: rgba(23, 23, 23, 0.4);
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  padding: 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+#close-bookmarks {
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+#close-bookmarks:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Making the icon slightly better aligned */
+#close-bookmarks i {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }

@@ -1,9 +1,9 @@
 {
     "manifest_version": 3,
-    "name": "New Tab Manager",
+    "name": "Midelum",
     "version": "1.0",
     "description": "Manage your new tab experience",
-    "permissions": ["management", "storage", "bookmarks", "history", "alarms"],
+    "permissions": ["management", "storage", "bookmarks", "history", "alarms", "tabs", "favicon"],
     "action": {
       "default_popup": "popup.html"
     },

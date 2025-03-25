@@ -40,6 +40,22 @@ function handleHistoryItems(historyItems) {
     chrome.bookmarks.search({}, (bookmarks) => handleBookmarks(bookmarks, sortedHistory));
 }
 
+function faviconURL(urlString) {
+    // Extract the base domain from the provided URL
+    const url = new URL(urlString);
+    const baseUrl = url.origin; // Gets https://mail.google.com
+
+    console.log(baseUrl);
+    
+    // Create the favicon URL using Chrome's API
+    const faviconUrl = new URL(chrome.runtime.getURL("/_favicon/"));
+    faviconUrl.searchParams.set("pageUrl", baseUrl);
+    faviconUrl.searchParams.set("size", "32");
+    
+    return faviconUrl.toString();
+  }
+
+
 function handleBookmarks(bookmarks, sortedHistory) {
     const bookmarkUrls = new Set(bookmarks.map(b => b.url));
     const frequentBookmarks = sortedHistory.filter(item => bookmarkUrls.has(item.url));
@@ -49,14 +65,18 @@ function handleBookmarks(bookmarks, sortedHistory) {
     const linkContainer = document.getElementById('top-links-container');
     linkContainer.innerHTML = ''; // Clear the container
 
+    // console.log(frequentBookmarks);
     // Add top 9 bookmarks
     frequentBookmarks.slice(0, 9).forEach(bm => {
         const link = document.createElement('a');
         link.href = bm.url;
         link.className = 'top-link';
+        link.target = '_blank';
 
         const icon = document.createElement('img');
         icon.src = `https://www.google.com/s2/favicons?domain=${new URL(bm.url).hostname}&sz=32`;
+        
+        // icon.src = faviconURL(bm.url);
         icon.className = 'site-icon';
         icon.alt = `${bm.title} icon`;
         
@@ -219,11 +239,6 @@ function createHistoryRow(item) {
     return row;
 }
 
-// Add close modal functionality
-// document.querySelector('.close').addEventListener('click', () => {
-//     const modal = document.getElementById("myModal");
-//     modal.style.display = "none";
-// });
 
 // Add this to your existing newtab.js
 function setBackgroundImage() {
@@ -251,11 +266,11 @@ function setBackgroundImage() {
 }
 
 
-document.addEventListener('DOMContentLoaded', initializeTopVisitedBookmarks);
-
-
 // Add this to your DOMContentLoaded event listener
 document.addEventListener('DOMContentLoaded', () => {
+
+    
+
     initializeTopVisitedBookmarks();
     setBackgroundImage();
 
@@ -375,6 +390,10 @@ function updateWeatherData(data) {
     // Get actual Date objects for sunrise and sunset
     const sunriseDate = new Date(data.sys.sunrise * 1000);
     const sunsetDate = new Date(data.sys.sunset * 1000);
+
+    const current_date = new Date;
+
+
     document.querySelector('.sunrise').textContent = `Sunrise: ${sunriseString}`;
     document.querySelector('.sunset').textContent = `Sunset: ${sunsetString}`;
 
@@ -434,11 +453,14 @@ async function getLocationAndWeather() {
 
         weatherButton.addEventListener('click', (e) => {
             modal.style.display = "block";
+            modal.classList.remove('slide-down-fade-out');
+            modal.classList.add('slide-up-fade-in');
             updateWeatherData(weather);
 
             document.querySelector('.close-button-2').addEventListener('click', (e) => {
                 e.preventDefault();
-                modal.style.display = "none";
+                modal.classList.remove('slide-up-fade-in');
+                modal.classList.add('slide-down-fade-out');
             });
         });
         // updateWeatherData(weather);
@@ -456,7 +478,11 @@ function date_time() {
         h = h - 12;
     }
     if(h<10) {
-        h = "0"+h;
+        if(h===0) {
+            h = "12";
+        } else {
+            h = "0"+h;
+        }
     }
     m = date.getMinutes();
     if(m<10) {
@@ -466,9 +492,18 @@ function date_time() {
     if(s<10) {
         s = "0"+s;
     }
-    document.getElementById("s").innerHTML = ''+s;
-    document.getElementById("m").innerHTML = ''+m;
-    document.getElementById("h").innerHTML = ''+h;
+
+    const clock_status = localStorage.getItem('clock');
+
+    if (clock_status === "1") {
+        document.getElementById("s").innerHTML = ''+s;
+        document.getElementById("m").innerHTML = ''+m;
+        document.getElementById("h").innerHTML = ''+h;
+    } else {
+        document.getElementById("b-s").innerHTML = ':'+s;
+        document.getElementById("b-m").innerHTML = ':'+m;
+        document.getElementById("b-h").innerHTML = ''+h;
+    }
 
 }
 
@@ -480,6 +515,67 @@ window.onload = function() {
     setInterval(date_time, 1000);
 };
 
+const clock_type_1 = document.getElementById('clock-type-1');
+const clock_type_2 = document.getElementById('clock-type-2');
+
+const modern_clock = document.getElementById('cube');
+const normal_clock = document.getElementById('basic');
+
+function display_modern_clock() {
+    normal_clock.style.display = "none";
+    modern_clock.style.display = "block";
+}
+
+function display_normal_clock() {
+    modern_clock.style.display = "none";
+    normal_clock.style.display = "flex";
+}
+
+
+clock_type_1.addEventListener('change', (e) => {
+    if (clock_type_1.checked) {
+        clock_type_2.checked = false;
+        saveToLocalStorage("clock", "1");
+        display_modern_clock();
+    } else {
+        // Prevent unchecking if user clicked on an already checked box
+        clock_type_1.checked = true;
+    }
+});
+
+clock_type_2.addEventListener('change', (e) => {
+    if (clock_type_2.checked) {
+        clock_type_1.checked = false;
+        saveToLocalStorage("clock", "2");
+        display_normal_clock();
+    } else {
+        // Prevent unchecking if user clicked on an already checked box
+        clock_type_2.checked = true;
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const clock_status = localStorage.getItem('clock');
+
+    if (clock_status) {
+        if (clock_status === "1") {
+            clock_type_1.checked = true;
+            clock_type_2.checked = false;
+            display_modern_clock();
+        } else if (clock_status === "2") {
+            clock_type_1.checked = false;
+            clock_type_2.checked = true;
+            display_normal_clock();
+        }
+    } else {
+        saveToLocalStorage("clock", "1");
+        clock_type_1.checked = true;
+        clock_type_2.checked = false;
+        display_modern_clock();
+    }
+});
+
+
 // Get references to both checkboxes
 const frequentlyVisitedCheckbox = document.getElementById('freq-v');
 const weatherCheckbox = document.getElementById('weather');
@@ -487,6 +583,7 @@ const weatherCheckbox = document.getElementById('weather');
 // Function for the Frequently Visited Bar checkbox
 function handleFrequentlyVisitedChange() {
   const top_links = document.getElementById('top-links-container');
+  top_links.style.display = 'flex';
   saveToLocalStorage('freq-v', frequentlyVisitedCheckbox.checked);
   if (frequentlyVisitedCheckbox.checked) {
     top_links.classList.remove('slide-down-fade-in');
@@ -500,6 +597,7 @@ function handleFrequentlyVisitedChange() {
 // Function for the Weather checkbox
 function handleWeatherChange() {
   const weatherButton = document.getElementById('open-weather');
+  weatherButton.style.display = 'flex';
   saveToLocalStorage('weather-v', weatherCheckbox.checked);
   if (weatherCheckbox.checked) {
     weatherButton.classList.remove('slide-up-fade-in');
@@ -518,16 +616,15 @@ weatherCheckbox.addEventListener('change', handleWeatherChange);
 function initializeFromLocalStorage() {
     const freqValue = localStorage.getItem('freq-v');
     const weatherValue = localStorage.getItem('weather-v');
-    console.log(freqValue, weatherValue);
     if (freqValue === "true") {
         const top_links = document.getElementById('top-links-container');
-        top_links.classList.add('slide-up-fade-out');
+        // top_links.classList.add('slide-up-fade-out');
+        top_links.style.display = 'none';
         frequentlyVisitedCheckbox.checked = true;
     }
     if (weatherValue === "true") {
-        console.log(weatherValue);
         const weatherButton = document.getElementById('open-weather');
-        weatherButton.classList.add('slide-down-fade-out');
+        weatherButton.style.display = 'none';
         weatherCheckbox.checked = true;
 
     }
@@ -583,3 +680,121 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+
+const drag_bar = document.getElementById('drag');
+const parent_container = drag_bar.parentElement; // Get the parent container
+let isDragging = false;
+let initialX, initialY; // Store the initial position
+let offsetX, offsetY; // Store the initial offset
+
+// Listen for mousedown on the drag bar
+drag_bar.addEventListener('mousedown', (e) => {
+  // Prevent default behavior (like text selection)
+  e.preventDefault();
+  
+  // Start dragging
+  isDragging = true;
+  
+  // Get the current mouse position
+  initialX = e.clientX;
+  initialY = e.clientY;
+  
+  // Get the current position of the parent container
+  const parentRect = parent_container.getBoundingClientRect();
+  offsetX = initialX - parentRect.left;
+  offsetY = initialY - parentRect.top;
+  
+  // Add a class to the body to disable text selection
+  document.body.classList.add('no-select');
+  
+  console.log('Started dragging');
+});
+
+function loadSavedPosition() {
+  const savedX = localStorage.getItem('containerX');
+  const savedY = localStorage.getItem('containerY');
+  
+  if (savedX !== null && savedY !== null) {
+    parent_container.style.left = `${savedX}px`;
+    parent_container.style.top = `${savedY}px`;
+    parent_container.style.right = 'auto'; // Switch to left positioning
+    console.log(`Loaded saved position: X: ${savedX}, Y: ${savedY}`);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadSavedPosition);
+
+// Listen for mousemove on the entire document
+document.addEventListener('mousemove', (e) => {
+  // Only track movement if currently dragging
+  if (isDragging) {
+    // Prevent default behavior
+    e.preventDefault();
+    
+    // Get the current mouse position
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    // Calculate the new position of the container
+    const newLeft = x - offsetX;
+    const newTop = y - offsetY;
+    
+    // Update the position of the parent container
+    parent_container.style.left = `${newLeft}px`;
+    parent_container.style.top = `${newTop}px`;
+    // If the container was using 'right' positioning, we need to change to 'left'
+    parent_container.style.right = 'auto';
+    
+    // Print the coordinates during drag
+    console.log(`Dragging at: X: ${x}, Y: ${y}`);
+  }
+});
+
+function savePosition(x, y) {
+    localStorage.setItem('containerX', x);
+    localStorage.setItem('containerY', y);
+}
+
+// Listen for mouseup on the entire document
+document.addEventListener('mouseup', (e) => {
+    // Only do something if we were dragging
+    if (isDragging) {
+      // Stop dragging
+      isDragging = false;
+      
+      // Remove the no-select class
+      document.body.classList.remove('no-select');
+      
+      console.log('Stopped dragging');
+      
+      // Get the final position of the parent container
+      const parentRect = parent_container.getBoundingClientRect();
+      const finalLeft = parentRect.left;
+      const finalTop = parentRect.top;
+      
+      // Save the final position
+      savePosition(finalLeft, finalTop);
+    }
+  });
+  
+  // Add this to ensure dragging stops if mouse leaves the window
+  document.addEventListener('mouseleave', (e) => {
+    if (isDragging) {
+      isDragging = false;
+      
+      // Remove the no-select class
+      document.body.classList.remove('no-select');
+      
+      console.log('Drag canceled (mouse left window)');
+      
+      // Get the current position of the parent container
+      const parentRect = parent_container.getBoundingClientRect();
+      const finalLeft = parentRect.left;
+      const finalTop = parentRect.top;
+      
+      // Save the position even if drag was canceled
+      savePosition(finalLeft, finalTop);
+    }
+  });

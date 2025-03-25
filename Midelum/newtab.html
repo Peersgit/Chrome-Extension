@@ -17,6 +17,9 @@
       <div class="face right"></div>
       <div class="face back"></div>
     </figure>
+    <div id="basic" class="basic-clock">
+      <h1 id="b-h"></h1><h1 id="b-m"></h1><h1 id="b-s"></h1>
+    </div>
   </div>
 
   <div id="myModal" class="modal">
@@ -38,11 +41,21 @@
 
 <a id="settings" class="settings-button closed"><i class="fa-solid fa-gear"></i></a>
 
+<!-- <div class="bookmark-modal">
+  <div class="drag-bar" id="drag">
+    <div id="close-bookmarks">
+      <i class="fa-solid fa-x"></i>
+    </div>
+  </div>
+  HELOO ANYONE
+</div> -->
 
 
 <div class="settings-container">
-  <div class="exit" id="close-settings">
-    <i class="fa-solid fa-x"></i>
+  <div class="drag-bar" id="drag">
+    <div class="exit" id="close-settings">
+      <i class="fa-solid fa-x"></i>
+    </div>
   </div>
   <div class="settings-body">
     <h1 class="s-h">Settings</h1>
@@ -54,11 +67,18 @@
       <span>Weather</span>
       <input type="checkbox" id="weather" class="custom-checkbox" name="weather" value="weather">
     </div>
+    <div class="setting-row">
+      <span>Clock Type</span>
+      <div>
+        <input type="checkbox" id="clock-type-1" class="custom-checkbox me-2" name="clock-type-1" value="clock-type-1">
+        <input type="checkbox" id="clock-type-2" class="custom-checkbox" name="clock-type-2" value="clock-type-2">
+      </div>
+    </div>
   </div>
 </div>
 
 
-<a id="open-weather" class="weather-button futuristic-button">Blank</a>
+<a id="open-weather" class="weather-button futuristic-button">Loading...</a>
 
 
 
