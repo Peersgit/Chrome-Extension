@@ -2,13 +2,13 @@
     "manifest_version": 3,
     "name": "Midelum",
     "version": "1.0",
-    "description": "Manage your new tab experience",
-    "permissions": ["management", "storage", "bookmarks", "history", "alarms", "tabs", "favicon"],
+    "description": "A simple, easy to use new tab manager. Organize your thoughts, and enjoy soothing backgrounds with our easy to use UX",
+    "permissions": ["management", "storage", "bookmarks", "history", "alarms", "tabs", "favicon", "search", "downloads"],
     "action": {
       "default_popup": "popup.html"
     },
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "assets/js/background.js"
     },
     "chrome_url_overrides": {
       "newtab": "newtab.html"
