@@ -30,16 +30,16 @@ const favoritesDialog = document.getElementById("img-fav");
 function addToFavorites() {
     // First, get the current background image information
     chrome.storage.local.get([
-        'backgroundImage', 
-        'photographer', 
-        'photo_url', 
+        'backgroundImage',
+        'photographer',
+        'photo_url',
         'lastUpdateTime'
     ], (currentImg) => {
         if (chrome.runtime.lastError) {
             console.error('Error retrieving current image:', chrome.runtime.lastError);
             return;
         }
-        
+
         // Create the new favorite item object
         const newFavorite = {
             backgroundImage: currentImg.backgroundImage,
@@ -47,24 +47,24 @@ function addToFavorites() {
             photo_url: currentImg.photo_url,
             savedAt: new Date().toISOString()
         };
-        
+
         // Now retrieve the existing favorites array (or create a new one if it doesn't exist)
         chrome.storage.local.get(['favorites'], (result) => {
             if (chrome.runtime.lastError) {
                 console.error('Error retrieving favorites:', chrome.runtime.lastError);
                 return;
             }
-            
+
             // Get the current favorites array or initialize a new one if it doesn't exist
             const favorites = result.favorites || [];
-            
+
             // Check if this image is already in favorites to avoid duplicates
             const isDuplicate = favorites.some(item => item.backgroundImage === newFavorite.backgroundImage);
-            
+
             if (!isDuplicate) {
                 // Add the new favorite to the array
                 favorites.push(newFavorite);
-                
+
                 // Save the updated favorites array back to storage
                 chrome.storage.local.set({ 'favorites': favorites }, () => {
                     if (chrome.runtime.lastError) {
@@ -88,7 +88,7 @@ function getFavorites() {
                 reject(new Error(chrome.runtime.lastError.message));
                 return;
             }
-            
+
             // Return the favorites array or an empty array if it doesn't exist
             resolve(result.favorites || []);
         });
@@ -102,13 +102,13 @@ function removeFromFavorites(imageUrl) {
             .then(favorites => {
                 const initialLength = favorites.length;
                 const updatedFavorites = favorites.filter(item => item.backgroundImage !== imageUrl);
-                
+
                 if (updatedFavorites.length === initialLength) {
                     // No item was removed
                     resolve(false);
                     return;
                 }
-                
+
                 // Save the updated array
                 chrome.storage.local.set({ 'favorites': updatedFavorites }, () => {
                     if (chrome.runtime.lastError) {
@@ -122,34 +122,87 @@ function removeFromFavorites(imageUrl) {
     });
 }
 
+const alldownloadButton = document.getElementById("download-all");
 
-add_to_favorites.addEventListener("click", function(e) {
-    addToFavorites();
+
+alldownloadButton.addEventListener("click", function (e) {
+    e.preventDefault();
+    console.log("Downloading all images...");
+    
+    chrome.storage.local.get(['favorites'], function (result) {
+        const favorites = result.favorites || [];
+        console.log('Favorites retrieved from storage:', favorites);
+        
+        if (favorites.length === 0) {
+            alert("No favorites to download");
+            return;
+        }
+        
+        // Create a new ZIP file
+        const zip = new JSZip();
+        let filesProcessed = 0;
+        
+        favorites.forEach((favorite, index) => {
+            // Fetch each image
+            fetch(favorite.backgroundImage)
+                .then(response => response.blob())
+                .then(blob => {
+                    // Add file to ZIP with a unique name
+                    const fileName = `image_${index + 1}.jpg`;
+                    zip.file(fileName, blob);
+                    
+                    filesProcessed++;
+                    
+                    // When all files are processed, generate and download the ZIP
+                    if (filesProcessed === favorites.length) {
+                        zip.generateAsync({type: "blob"})
+                            .then(content => {
+                                // Create a download URL for the ZIP
+                                const zipUrl = URL.createObjectURL(content);
+                                
+                                // Download the ZIP file
+                                chrome.downloads.download({
+                                    url: zipUrl,
+                                    filename: "favorites.zip",
+                                    saveAs: true
+                                });
+                            });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching image:", error);
+                    filesProcessed++;
+                });
+        });
+    });
 });
 
+add_to_favorites.addEventListener("click", function (e) {
+    addToFavorites();
+});
 
 favoritesDialog.addEventListener("click", (event) => {
     const modal = document.getElementById("fav-modal");
     const modalBody = modal.querySelector(".modal-bod");
-    
+
     // Clear any existing list items
     modalBody.innerHTML = '';
-    
+
     // Show the modal immediately
     modal.style.display = "flex";
-    
+
     // Create a loading indicator
     const loadingElement = document.createElement("div");
     loadingElement.className = "loading-favorites";
     loadingElement.textContent = "Loading favorites...";
     modalBody.appendChild(loadingElement);
-    
+
     // Get the favorites and populate the modal
     getFavorites()
         .then(favorites => {
             // Remove loading indicator
             modalBody.removeChild(loadingElement);
-            
+
             // Check if there are any favorites
             if (favorites.length === 0) {
                 const noFavoritesElement = document.createElement("div");
@@ -158,16 +211,16 @@ favoritesDialog.addEventListener("click", (event) => {
                 modalBody.appendChild(noFavoritesElement);
                 return;
             }
-            
+
             // Create a list element to hold the favorites
             const favoritesList = document.createElement("ul");
             favoritesList.className = "favorites-list";
-            
+
             // Add each favorite to the list
             favorites.forEach(favorite => {
                 const listItem = document.createElement("li");
                 listItem.className = "favorite-item";
-                
+
                 // Create the item's HTML structure
                 listItem.innerHTML = `
                     <div class="favorite-image">
@@ -179,32 +232,32 @@ favoritesDialog.addEventListener("click", (event) => {
                         <i class="fa-solid fa-trash" title="Remove Image"></i>
                     </div>
                 `;
-                
+
                 // Add the item to the list first
                 favoritesList.appendChild(listItem);
-                
+
                 // Now find the icons within this specific list item
                 const downloadButton = listItem.querySelector(".fa-file-arrow-down");
                 const trashButton = listItem.querySelector(".fa-trash");
-                
+
                 // Add event listener to the download button
-                downloadButton.addEventListener("click", function(e) {
+                downloadButton.addEventListener("click", function (e) {
                     e.stopPropagation(); // Prevent triggering the parent list item's click
-                    
+
                     // Use Chrome's download API to download the image
                     chrome.downloads.download({
                         url: favorite.backgroundImage,
                         filename: "background.jpg"
                     });
                 });
-                
+
                 // Add event listener to the trash button
-                trashButton.addEventListener("click", function(e) {
+                trashButton.addEventListener("click", function (e) {
                     e.stopPropagation(); // Prevent triggering the parent list item's click
-                    
+
                     // Get the image URL from the favorite object
                     const imageUrl = favorite.backgroundImage;
-                    
+
                     // Use your removeFromFavorites function to delete this item
                     removeFromFavorites(imageUrl)
                         .then(removed => {
@@ -212,14 +265,14 @@ favoritesDialog.addEventListener("click", (event) => {
                                 // Item was successfully removed from storage
 
                                 display_added_toast("Image removed from Favorites", false);
-                                
+
                                 // Remove the list item from the DOM
                                 listItem.classList.add('removing'); // Optional: add animation class
-                                
+
                                 // Remove element after animation or immediately
                                 setTimeout(() => {
                                     listItem.remove();
-                                    
+
                                     // Check if the list is now empty
                                     if (favoritesList.children.length === 0) {
                                         // Show "no favorites" message
@@ -239,7 +292,7 @@ favoritesDialog.addEventListener("click", (event) => {
                         });
                 });
             });
-            
+
             // Add the list to the modal body
             modalBody.appendChild(favoritesList);
         })
@@ -741,7 +794,7 @@ const clockSettingsToggle = document.getElementById('clockSettingsToggle');
 let isRotated = false;
 
 clockSettingsToggle.addEventListener('click', () => {
-    isRotated =!isRotated;
+    isRotated = !isRotated;
 
     if (isRotated) {
         clockSettingsToggle.classList.add('rotate');
@@ -771,13 +824,13 @@ function displayClockSettings(show = true) {
         document.getElementById('clock-setting-3'),
         document.getElementById('clock-setting-4')
     ];
-    
+
     if (show) {
         // Show animation sequence
         settingRows.forEach((row, index) => {
             if (row) {
                 row.style.display = 'flex'; // Set to flex first to enable animation
-                
+
                 // Use setTimeout to create a sequential reveal
                 setTimeout(() => {
                     row.classList.remove('hidden');
@@ -792,11 +845,11 @@ function displayClockSettings(show = true) {
             if (row) {
                 // Calculate delay based on reverse position
                 const delay = (settingRows.length - 1 - i) * 100;
-                
+
                 setTimeout(() => {
                     row.classList.remove('animate');
                     row.classList.add('hidden');
-                    
+
                     // Set display:none after the animation completes
                     setTimeout(() => {
                         row.style.display = 'none';
@@ -841,13 +894,13 @@ clock_type_2.addEventListener("change", (e) => {
 function display_added_toast(message, error) {
     const toast = document.getElementById("toast");
     const toast_message = toast.querySelector(".toast-message");
-    
+
     // Store original HTML content
     const originalHTML = toast.innerHTML;
-    
+
     // Set message text
     toast_message.textContent = message;
-    
+
     // Replace icon if error is true
     if (error) {
         const toast_icon = toast.querySelector(".fa-circle-check");
@@ -855,17 +908,17 @@ function display_added_toast(message, error) {
             toast_icon.className = "fa-solid fa-circle-xmark";
         }
     }
-    
+
     // Show toast with animation
     toast.classList.remove("toast-hidden");
     toast.classList.remove("slide-down");
     toast.classList.add("slide-up");
-    
+
     // Hide toast and reset original HTML
     setTimeout(() => {
         toast.classList.remove("slide-up");
         toast.classList.add("slide-down");
-        
+
         // Reset original HTML after slide down animation completes
         setTimeout(() => {
             toast.innerHTML = originalHTML;
@@ -1261,7 +1314,7 @@ function handleBorderColorChange(color, borderPicker) {
     });
 
     saveToLocalStorage("clockBorderColor", clockBorderColor);
-    
+
     borderPicker.hide();
 }
 
@@ -1277,7 +1330,7 @@ function handleBackgroundColorChange(color, backgroundPicker) {
     cube_face_3.style.backgroundColor = colorValue;
 
     saveToLocalStorage("clockBackground", colorValue);
-    
+
     backgroundPicker.hide();
 }
 
@@ -1298,12 +1351,12 @@ function handleShadowColorChange(color, shadowPicker, textElements) {
                 1px -1px 0 ${clockShadowColor}, 
                 -1px 1px 0 ${clockShadowColor},
                 1px 1px 0 ${clockShadowColor}`;
-                
+
             // Apply the new text-shadow
             element.style.textShadow = newTextShadow;
         }
     });
-    
+
     saveToLocalStorage("clockShadowColor", clockShadowColor);
 }
 
@@ -1329,39 +1382,39 @@ function getUserColors() {
     const clockBorderColor = localStorage.getItem("clockBorderColor");
     const clockShadowColor = localStorage.getItem("clockShadowColor");
     const clockTextColor = localStorage.getItem("clockTextColor");
-    
+
     // Object to store all found colors
     const savedColors = {};
-    
+
     if (clockBackground) {
         savedColors.background = clockBackground;
-        
+
         const faces = document.querySelectorAll('.face');
         faces.forEach(face => {
             face.style.backgroundColor = clockBackground;
         });
     }
-    
+
     if (clockBorderColor) {
         savedColors.border = clockBorderColor;
-                
+
         const cube_faces = document.querySelectorAll('.face');
         cube_faces.forEach(face => {
             face.style.borderColor = clockBorderColor;
         });
-        
+
     }
-    
+
     if (clockShadowColor) {
         savedColors.shadow = clockShadowColor;
-        
-        
+
+
         const textElements = [
             document.getElementById('s'),
             document.getElementById('m'),
             document.getElementById('h')
         ];
-        
+
         textElements.forEach(element => {
             if (element) {
                 const newTextShadow = `0px 0px 5px #000, 
@@ -1369,32 +1422,32 @@ function getUserColors() {
                     1px -1px 0 ${clockShadowColor}, 
                     -1px 1px 0 ${clockShadowColor},
                     1px 1px 0 ${clockShadowColor}`;
-                
+
                 element.style.textShadow = newTextShadow;
             }
         });
-        
+
     }
-    
+
     if (clockTextColor) {
 
         savedColors.text = clockTextColor;
-        
+
         // Parse the rgba string from localStorage
         const rgbaMatch = clockTextColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d*(?:\.\d+)?))?\)/);
         if (rgbaMatch) {
             const red = parseInt(rgbaMatch[1]);
             const green = parseInt(rgbaMatch[2]);
             const blue = parseInt(rgbaMatch[3]);
-            
+
             const textColor = `rgba(${red}, ${green}, ${blue}, 0.8)`;
-            
+
             const textElements = [
                 document.getElementById('s'),
                 document.getElementById('m'),
                 document.getElementById('h')
             ];
-            
+
             textElements.forEach(element => {
                 if (element) {
                     element.style.color = textColor;
@@ -1402,7 +1455,7 @@ function getUserColors() {
             });
         }
     }
-    
+
     return savedColors;
 }
 
@@ -1438,7 +1491,7 @@ colorReset.addEventListener('click', function () {
     localStorage.removeItem("clockBorderColor");
     localStorage.removeItem("clockShadowColor");
     localStorage.removeItem("clockTextColor");
-    
+
     // Reload the page
     location.reload();
 });
@@ -1602,5 +1655,60 @@ document.addEventListener("DOMContentLoaded", function () {
             settingsButton.classList.add("open");
         }
     });
+
+});
+
+function displayToolTip(element, icon1, icon2, action = null) {
+    const tooltip = document.getElementById(element);
+
+    if (element === 'passwords' || element === 'history') {
+        tooltip.addEventListener('click', function (e) {
+            e.preventDefault();
+            chrome.tabs.create({ url: action });
+        });
+    };
+
+    tooltip.addEventListener('mouseenter', function (e) {
+        const tooltip = this.parentElement.firstElementChild;
+        const icon = this.firstElementChild;
+
+        // Remove hiding class and stop any ongoing animation
+        tooltip.classList.remove('hiding');
+        tooltip.style.visibility = 'visible'; // Ensure it's visible first
+
+        // Apply the animation after a tiny delay to ensure the browser registers the change
+        icon.classList.remove(icon1);
+        icon.classList.add(icon2);
+        tooltip.classList.add('visible');
+
+    });
+
+    tooltip.addEventListener('mouseleave', function (e) {
+        const tooltip = this.parentElement.firstElementChild;
+        const icon = this.firstElementChild;
+
+        // Change icon back
+        icon.classList.remove(icon2);
+        icon.classList.add(icon1);
+
+        // Apply hiding animation
+        tooltip.classList.remove('visible');
+        tooltip.classList.add('hiding');
+
+        // After animation completes, reset
+        setTimeout(() => {
+            tooltip.classList.remove('hiding');
+            tooltip.style.visibility = 'hidden';
+        }, 100);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+
+    displayToolTip('passwords', 'fa-lock', 'fa-unlock', 'chrome://password-manager/passwords');
+    displayToolTip('history', 'fa-book-open', 'fa-book-open-reader', 'chrome://history/');
+    displayToolTip('settings', 'fa-gear', 'fa-gears');
+
 
 });

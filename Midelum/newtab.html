@@ -38,7 +38,34 @@
         </div>
     </div>
 
-    <a id="settings" class="settings-button closed"><i class="fa-solid fa-gear"></i></a>
+    <div class="btm-button password-button">
+        <div class="tool-tip">
+            <p>Passwords</p>
+        </div>
+        <a id="passwords" class="hover-c" href="#">
+            <i class="fa-solid fa-lock"></i>
+        </a>
+    </div>
+    <div class="btm-button settings-button">
+        <div class="tool-tip">
+            <p>Extension Settings</p>
+        </div>
+        <a id="settings" class="hover-c closed" href="#">
+            <i class="fa-solid fa-gear"></i>
+        </a>
+    </div>
+    <div class="btm-button history-button">
+        <div class="tool-tip">
+            <p>History</p>
+        </div>
+        <a id="history" class="hover-c" href="#">
+            <i class="fa-solid fa-book-open"></i>
+        </a>
+    </div>
+    
+    <!-- <a id="settings" class="btm-button settings-button closed"><i class="fa-solid fa-gear"></i></a> -->
+    
+    <!-- <a id="history" class="btm-button history-button" href="#"><i class="fa-solid fa-book-open"></i></a> -->
 
     <div class="settings-container">
         <div class="drag-bar" id="drag">
@@ -108,13 +135,16 @@
     <div class="fav-modal" id="fav-modal">
         <div class="modal-card">
             <div class="modal-header">
-                <h2 class="modal-title">Your Favourite Images</h2>
-                <a class="close-fav-modal" style="cursor: pointer;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </a>
+                <h2 class="modal-title">Favorites</h2>
+                <div class="card-tags">
+                    <i id="download-all" class="fa-solid fa-download" title="Download All Images"></i>
+                    <a class="close-fav-modal" style="cursor: pointer;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </a>
+                </div>
             </div>
             <div class="modal-bod">
                 
@@ -127,7 +157,7 @@
 
 
     <div class="img-stats">
-        <i id="add-to-fav" class="fa-solid fa-plus" title="Add to Favourites"></i>
+        <i id="add-to-fav" class="fa-solid fa-plus" title="Add to Favorites"></i>
         <h2 id="photographer" class="photographer">matt mcman</h2>
         <a id="photographer-url" class="name" target="_blank" href="">Visit this photographers page</a>
     </div>
@@ -206,6 +236,8 @@
     </div>
 
     <!-- <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script> -->
+
+    <script src="/assets/js/jszip.min.js"></script>
 
     <script src="/assets/js/pickr.min.js"></script>
 

@@ -169,12 +169,18 @@ body > * {
   flex-direction: column;
 }
 
+.card-tags {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
 .modal-header {
   padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f5f5f5;
+  border: 1px solid #d9d9d98a;
 }
 
 .modal-title {
@@ -444,7 +450,7 @@ figure:hover {
   background: #000;
   text-align: center;
 }
-p {
+.face p {
   font-size: 180px;
   font-family: "Digital-7";
   margin-top: 20px;
@@ -475,24 +481,130 @@ p {
   background: #222;
 }
 
-.settings-button {
+.btm-button {
   position: absolute;
   bottom: 20px;
   right: 50%;
   color: #d9d9d9;
   text-decoration: none;
-  transition: transform 0.3s ease, color 0.3s ease;
   cursor: pointer;
   z-index: 5;
+  display: inline-block;
 }
 
-.settings-button:hover {
+.hover-c i {
+  transition: transform 0.3s ease, color 0.3s ease;
+  text-decoration: none;
+  color: #d9d9d9;
+}
+
+.hover-c i:hover {
   color: white;
   transform: scale(1.2);
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
 }
 
-.settings-button:hover .settings-button-icon {
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+.settings-button {
+  bottom: 20px;
+  right: 50%;
+}
+.password-button {
+  bottom: 20px;
+  right: 48%;
+}
+.history-button {
+  bottom: 20px;
+  right: 52%;
+}
+
+.tool-tip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    margin-bottom: 10px;
+    background: #171717;
+    padding: 5px 8px;
+    border-radius: 3px;
+    border: 1px solid #d9d9d9;
+    text-align: center;
+    white-space: nowrap;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 6;
+    cursor: default;
+    opacity: 0;
+    visibility: hidden;
+    transform-origin: bottom center;
+    /* Remove transition property for opacity - we'll handle it in the animation */
+}
+
+@keyframes tooltipGrow {
+    0% {
+        transform: translateX(-50%) scale(0);
+        opacity: 0;
+    }
+    80% {
+        transform: translateX(-50%) scale(1.01);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes tooltipShrink {
+    0% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%) scale(0);
+        opacity: 0;
+    }
+}
+
+.tool-tip.visible {
+    animation: tooltipGrow 0.8s forwards;
+}
+
+.tool-tip.hiding {
+    animation: tooltipShrink 0.2s forwards;
+}
+
+.tool-tip p {
+  font-family: Arial, sans-serif;
+  width: 100%;
+  color: #d9d9d9;
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+/* Add this to create the arrow at the bottom */
+.tool-tip:after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #d9d9d9 transparent transparent transparent;
+}
+
+.tool-tip:before {
+  content: none !important;
+  display: none !important;
+}
+
+.btm-button:before,
+.password-button:before {
+  content: none !important;
+  display: none !important;
 }
 
 .drag-bar {
@@ -792,8 +904,8 @@ p {
 }
 
 .fa-circle-xmark {
-    color: red;
-    font-size: 1.1rem;
+  color: red;
+  font-size: 1.1rem;
 }
 
 /* Keyframes for sliding up animation */
@@ -995,11 +1107,11 @@ p {
 }
 
 #clockSettingsToggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.3s ease;
-    cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease;
+  cursor: pointer;
 }
 
 #clockSettingsToggle.rotate {
@@ -1007,122 +1119,129 @@ p {
 }
 
 .fa-pen-to-square {
-    font-size: 1.1rem;
-    color: #d9d9d9;
-    cursor: pointer;
+  font-size: 1.1rem;
+  color: #d9d9d9;
+  cursor: pointer;
 }
 
 .fa-pen-to-square:hover {
-    color: white;
-    transform: scale(1.1);
+  color: white;
+  transform: scale(1.1);
 }
-
 
 .fav-modal {
-    position: absolute;
-    background: rgba(0, 0, 0, 0.6);
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 100;
-    display: none;
-    justify-content: center;
-    align-items: center;
+  position: absolute;
+  background: rgba(0, 0, 0, 0.6);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  display: none;
+  justify-content: center;
+  align-items: center;
 }
 
-
 .modal-card {
-    width: 400px;
-    height: 500px;
-    max-height: 500px;
-    background: #171717;
-    border-radius: 10px;
+  width: 400px;
+  height: 500px;
+  max-height: 500px;
+  background: #171717;
+  border-radius: 10px;
+  border: 1px solid #d9d9d98a;
 }
 
 .fa-plus {
-    cursor: pointer;
+  cursor: pointer;
 }
 
-
 .favorites-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 400px;
-    overflow-y: auto;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .favorite-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px;
-    margin-bottom: 8px;
-    background-color: rgba(30, 30, 30, 0.7);
-    border-radius: 5px;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    opacity: 1;
-    transform: translateX(0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  margin-bottom: 8px;
+  background-color: rgba(30, 30, 30, 0.7);
+  border-radius: 5px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .favorite-item.removing {
-    opacity: 0;
-    transform: translateX(-20px); /* Slide left while fading out */
-    pointer-events: none; /* Prevent clicks during animation */
+  opacity: 0;
+  transform: translateX(-20px); /* Slide left while fading out */
+  pointer-events: none; /* Prevent clicks during animation */
 }
 
-
 .favorite-item:hover {
-    background-color: rgba(40, 40, 40, 0.9);
+  background-color: rgba(40, 40, 40, 0.9);
 }
 
 .favorite-image {
-    margin-right: 12px;
+  margin-right: 12px;
 }
 
 .thumbnail {
-    max-height: 50px;
-    width: auto;
-    border-radius: 3px;
-    object-fit: cover;
+  max-height: 50px;
+  width: auto;
+  border-radius: 3px;
+  object-fit: cover;
 }
 
 .favorite-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .photographer-name {
-    color: #fff;
-    font-size: 14px;
+  color: #fff;
+  font-size: 14px;
 }
 
-.loading-favorites, .no-favorites, .error-message {
-    color: #ccc;
-    text-align: center;
-    padding: 20px;
+.loading-favorites,
+.no-favorites,
+.error-message {
+  color: #ccc;
+  text-align: center;
+  padding: 20px;
 }
 
-.fa-file-arrow-down {
+.fa-download {
     cursor: pointer;
-    margin-left: 10px;
     font-size: 1.1rem;
     color: #d9d9d9;
 }
+.fa-download:hover {
+    color: white;
+}
+.fa-file-arrow-down {
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 1.1rem;
+  color: #d9d9d9;
+}
 
 .fa-file-arrow-down:hover {
-    color: white;
+  color: white;
 }
 
 .fa-trash {
-    cursor: pointer;
-    margin-left: 10px;
-    font-size: 1.1rem;
-    color: rgba(255, 0, 0, 0.5);
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 1.1rem;
+  color: rgba(255, 0, 0, 0.5);
 }
 
 .fa-trash:hover {
-    color: rgba(255, 0, 0, 0.8);
+  color: rgba(255, 0, 0, 0.8);
 }

@@ -15,5 +15,17 @@
     },
     "host_permissions": [
         "https://api.pexels.com/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["assets/js/jszip.min.js"]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["assets/js/jszip.min.js"],
+            "matches": ["<all_urls>"]
+        }
     ]
-  }
+}
