@@ -1,0 +1,13 @@
+{
+    "web": {
+        "client_id": "8955040066-o1fsmt83ukg5baftsijebmgdnfj7ofgj.apps.googleusercontent.com",
+        "project_id": "gmail-midelum",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret": "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",
+        "redirect_uris": [
+            "https://oaklndldgdlddjfbnjjapmfhnnahlcdf.chromiumapp.org/"
+        ]
+    }
+}

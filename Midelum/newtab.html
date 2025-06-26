@@ -19,12 +19,39 @@
         <div id="basic" class="basic-clock">
             <h1 id="b-h"></h1><h1 id="b-m"></h1><h1 id="b-s"></h1>
         </div>
+
+    </div>
+
+
+    <div class="dev-pull-out">
+        <a class="dev-pull-out-tab"><i class="dev-icon fa-solid fa-caret-right"></i></a>
+        <div class="dev-panel">
+            <div class="dev-panel-content">
+                <h4>Developer Panel</h4>
+                <ul>
+                    <li><a href="http://localhost:8000">Localhost</a></li>
+                    <li><a href="http://127.0.0.1:8000">127.0.0.1</a></li>
+                    <li><a href="http://127.0.0.1:8000/cleetus">Cleetus</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <div id="myModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Top 50 Visited Sites - Last 30 Days</h2>
+                <div class="nav-dropdown">
+                    <select id="siteCount" class="site-count-select">
+                        <option value="3">Top 3 visited sites</option>
+                        <option value="5">Top 5 visited sites</option>
+                        <option value="10">Top 10 visited sites</option>
+                        <option value="20">Top 20 visited sites</option>
+                        <option value="50" selected>Top 50 visited sites</option>
+                        <option value="100">Top 100 visited sites</option>
+                    </select>
+                </div>
+                <span class="nav-text">in the last</span>
+                <span class="nav-text">100 days</span>
                 <a class="close-button" style="cursor: pointer;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -38,29 +65,31 @@
         </div>
     </div>
 
-    <div class="btm-button password-button">
-        <div class="tool-tip">
-            <p>Passwords</p>
+    <div class="bottom-buttons-container">
+        <div class="btm-button password-button">
+            <div class="tool-tip">
+                <p>Passwords</p>
+            </div>
+            <a id="passwords" class="hover-c" href="#">
+                <i class="fa-solid fa-lock"></i>
+            </a>
         </div>
-        <a id="passwords" class="hover-c" href="#">
-            <i class="fa-solid fa-lock"></i>
-        </a>
-    </div>
-    <div class="btm-button settings-button">
-        <div class="tool-tip">
-            <p>Extension Settings</p>
+        <div class="btm-button settings-button">
+            <div class="tool-tip">
+                <p>Extension Settings</p>
+            </div>
+            <a id="settings" class="hover-c closed" href="#">
+                <i class="fa-solid fa-gear"></i>
+            </a>
         </div>
-        <a id="settings" class="hover-c closed" href="#">
-            <i class="fa-solid fa-gear"></i>
-        </a>
-    </div>
-    <div class="btm-button history-button">
-        <div class="tool-tip">
-            <p>History</p>
+        <div class="btm-button history-button">
+            <div class="tool-tip">
+                <p>History</p>
+            </div>
+            <a id="history" class="hover-c" href="#">
+                <i class="fa-solid fa-book-open"></i>
+            </a>
         </div>
-        <a id="history" class="hover-c" href="#">
-            <i class="fa-solid fa-book-open"></i>
-        </a>
     </div>
     
     <!-- <a id="settings" class="btm-button settings-button closed"><i class="fa-solid fa-gear"></i></a> -->
@@ -79,7 +108,7 @@
         </div>
         <div class="settings-body">
             <div class="setting-row">
-                <span>Remove Fruequently Visited Bar</span>
+                <span>Fruequently Visited</span>
                 <input type="checkbox" id="freq-v" class="custom-checkbox" name="freq-v" value="fv">
             </div>
             <div class="setting-row">
@@ -238,10 +267,9 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script> -->
 
     <script src="/assets/js/jszip.min.js"></script>
-
     <script src="/assets/js/pickr.min.js"></script>
-
     <script src="/assets/js/newtab.js"></script>
-  
+
+    
 </body>
 </html>

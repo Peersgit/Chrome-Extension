@@ -9,6 +9,10 @@
     --success-color: #2a9d8f;
     --border-radius: 8px;
     --transition-speed: 0.2s;
+    --scrollbar-width: 8px;
+    --scrollbar-track: #1a1a1a;
+    --scrollbar-thumb: #3a3a3a;
+    --scrollbar-thumb-hover: #4a4a4a;
   }
   
   body {
@@ -22,158 +26,74 @@
     overflow-y: auto;
     transition: all var(--transition-speed) ease;
   }
-  
-  .title {
-    font-size: 22px;
-    font-weight: 700;
-    margin: 0 0 16px 0;
-    color: var(--text-primary);
-    text-align: center;
-  }
-  
-  .content {
+
+  .container {
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
-  
-  .btn-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 4px;
-  }
-  
-  .btn {
-    background-color: var(--bg-secondary);
+
+  .title {
+    font-size: 1.5rem;
+    margin: 0;
     color: var(--text-primary);
-    border: none;
-    border-radius: var(--border-radius);
-    padding: 10px 12px;
-    cursor: pointer;
-    font-weight: 500;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-speed) ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .btn:hover {
-    background-color: var(--accent-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .btn i {
-    font-size: 16px;
-  }
-  
-  #add-site {
-    background-color: var(--accent-color);
-  }
-  
-  #add-site:hover {
-    background-color: #2563eb;
-  }
-  
-  .sites-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: 4px;
-  }
-  
-  /* Custom scrollbar */
-  .sites-container::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  .sites-container::-webkit-scrollbar-track {
-    background: var(--bg-primary);
-  }
-  
-  .sites-container::-webkit-scrollbar-thumb {
-    background-color: var(--bg-secondary);
-    border-radius: 20px;
-  }
-  
-  .site-wrapper {
-    background-color: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: all var(--transition-speed) ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
   }
 
-  .site-wrapper.active {
-    background: linear-gradient(to right bottom, #b4b4b4, #171717);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  }
-  
-  .site-wrapper.active .site {
-    color: var(--text-primary);
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-  }
-  
-  .site {
-    color: var(--text-primary);
-    text-decoration: none;
-    font-size: 14px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-    padding-right: 8px;
-    cursor: pointer;
-  }
-  
-  .site:hover {
-    color: var(--accent-color);
-  }
-  
-  .remove-btn {
-    background: transparent;
+  .summarize-btn {
+    background-color: var(--accent-color);
+    color: white;
     border: none;
-    color: var(--text-secondary);
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    padding: 4px;
-    border-radius: 50%;
+    font-size: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-speed) ease;
+    gap: 8px;
+    transition: background-color var(--transition-speed) ease;
   }
-  
-  .remove-btn:hover {
-    color: var(--danger-color);
-    background-color: rgba(230, 57, 70, 0.1);
+
+  .summarize-btn:hover {
+    background-color: #2b6cd9;
   }
-  
-  .remove-btn i {
-    font-size: 14px;
+
+  .text-container {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+    /* Custom scrollbar styles */
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
-  
-  .status {
-    margin-top: 12px;
-    font-size: 12px;
+
+  /* Webkit (Chrome, Safari, newer Edge) scrollbar styles */
+  .text-container::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+  }
+
+  .text-container::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: var(--scrollbar-width);
+  }
+
+  .text-container::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: var(--scrollbar-width);
+    border: 2px solid var(--scrollbar-track);
+  }
+
+  .text-container::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  .summary-text {
+    margin: 0;
     color: var(--text-secondary);
-    text-align: center;
-    min-height: 16px;
+    line-height: 1.5;
   }
   
-  /* Animation for when items are added */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  .site-wrapper {
-    animation: fadeIn 0.3s ease-out forwards;
-  }

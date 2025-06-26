@@ -228,7 +228,11 @@ favoritesDialog.addEventListener("click", (event) => {
                     </div>
                     <div class="favorite-info">
                         <span class="photographer-name">${favorite.photographer || 'Unknown'}</span>
-                        <i class="fa-solid fa-file-arrow-down" title="Download Image"></i>
+                        <i class="fa-solid fa-file-arrow-down" title="Download Image">
+                            <div class="tool-tip" style="bottom: calc(100% + 10px); left: 50%;">
+                                <p>Download Image</p>
+                            </div>
+                        </i>
                         <i class="fa-solid fa-trash" title="Remove Image"></i>
                     </div>
                 `;
@@ -414,26 +418,10 @@ async function handleFrequentlyVisited() {
     }
 }
 
-function getHistoryItems() {
-    const millisecondsPerDay = 1000 * 60 * 60 * 24;
-    const thirtyDaysAgo = new Date().getTime() - (30 * millisecondsPerDay);
-
-    return new Promise((resolve, reject) => {
-        chrome.history.search({
-            text: "",              // Return all history items
-            startTime: thirtyDaysAgo,
-            maxResults: 10000
-        }, (historyItems) => {
-            if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-            } else {
-                resolve(historyItems);
-            }
-        });
-    });
-}
-
 function processHistoryItems(historyItems) {
+    // Get stored values from localStorage or use defaults
+    const siteCount = parseInt(localStorage.getItem('siteCount')) || 50;
+
     // Group items by URL to combine visit counts
     const urlMap = new Map();
 
@@ -454,7 +442,26 @@ function processHistoryItems(historyItems) {
     // Convert to array and sort by visit count
     return Array.from(urlMap.values())
         .sort((a, b) => b.visitCount - a.visitCount)
-        .slice(0, 50); // Take top 20 most visited
+        .slice(0, siteCount); // Use stored siteCount
+}
+
+function getHistoryItems() {
+    const millisecondsPerDay = 1000 * 60 * 60 * 24;
+    const hundredDaysAgo = new Date().getTime() - (100 * millisecondsPerDay);
+
+    return new Promise((resolve, reject) => {
+        chrome.history.search({
+            text: "",              // Return all history items
+            startTime: hundredDaysAgo,
+            maxResults: 10000
+        }, (historyItems) => {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve(historyItems);
+            }
+        });
+    });
 }
 
 function displayModal(items) {
@@ -465,8 +472,8 @@ function displayModal(items) {
     modalBody.innerHTML = "";
 
     // Add each history item to the modal
-    items.forEach(item => {
-        const row = createHistoryRow(item);
+    items.forEach((item, index) => {
+        const row = createHistoryRow(item, index);
         modalBody.appendChild(row);
     });
 
@@ -512,9 +519,14 @@ function createIcon(url) {
     return iconContainer;
 }
 
-function createHistoryRow(item) {
+function createHistoryRow(item, index) {
     const row = document.createElement("div");
     row.className = "item-row";
+
+    // Create rank number element
+    const rank = document.createElement("span");
+    rank.className = "item-rank";
+    rank.textContent = `#${index + 1}`;
 
     // Create favicon element
     const icon = createIcon(item.url);
@@ -536,6 +548,7 @@ function createHistoryRow(item) {
     });
 
     // Assemble row
+    row.appendChild(rank);
     row.appendChild(icon);
     row.appendChild(title);
     row.appendChild(count);
@@ -825,17 +838,22 @@ function displayClockSettings(show = true) {
         document.getElementById('clock-setting-4')
     ];
 
+    const settingsBody = document.querySelector('.settings-body');
+
     if (show) {
         // Show animation sequence
         settingRows.forEach((row, index) => {
             if (row) {
                 row.style.display = 'flex'; // Set to flex first to enable animation
+                row.classList.remove('hidden');
+                row.classList.add('animate');
 
-                // Use setTimeout to create a sequential reveal
-                setTimeout(() => {
-                    row.classList.remove('hidden');
-                    row.classList.add('animate');
-                }, index * 100); // 100ms delay between each row
+                // If this is the last row, scroll to it after a short delay
+                if (index === settingRows.length - 1) {
+                    setTimeout(() => {
+                        row.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 100); // Small delay to ensure the element is visible
+                }
             }
         });
     } else {
@@ -843,18 +861,13 @@ function displayClockSettings(show = true) {
         for (let i = settingRows.length - 1; i >= 0; i--) {
             const row = settingRows[i];
             if (row) {
-                // Calculate delay based on reverse position
-                const delay = (settingRows.length - 1 - i) * 100;
+                row.classList.remove('animate');
+                row.classList.add('hidden');
 
+                // Set display:none after the animation completes
                 setTimeout(() => {
-                    row.classList.remove('animate');
-                    row.classList.add('hidden');
-
-                    // Set display:none after the animation completes
-                    setTimeout(() => {
-                        row.style.display = 'none';
-                    }, 500); // Match this to your transition duration
-                }, delay);
+                    row.style.display = 'none';
+                }, 300); // Match this to your transition duration
             }
         }
     }
@@ -1656,31 +1669,70 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // Add event listeners for dropdowns
+    const siteCountSelect = document.getElementById('siteCount');
+
+    // Load saved values from localStorage
+    const savedSiteCount = localStorage.getItem('siteCount');
+    
+    if (savedSiteCount) siteCountSelect.value = savedSiteCount;
+
+    // Save values and update list when dropdown changes
+    siteCountSelect.addEventListener('change', async function() {
+        localStorage.setItem('siteCount', this.value);
+        try {
+            const historyItems = await getHistoryItems();
+            const sortedItems = processHistoryItems(historyItems);
+            displayModal(sortedItems);
+        } catch (error) {
+            console.error("Error updating history:", error);
+        }
+    });
+
+    // Dev pull-out functionality
+    const devPullOut = document.querySelector('.dev-pull-out');
+    const devPullOutTab = document.querySelector('.dev-pull-out-tab');
+    const devIcon = document.querySelector('.dev-icon');
+    
+    if (devPullOutTab) {
+        devPullOutTab.addEventListener('click', function(e) {
+            e.preventDefault();
+            devPullOut.classList.toggle('expanded');
+            devIcon.classList.toggle('fa-caret-right');
+            devIcon.classList.toggle('fa-caret-left');
+        });
+    }
+
 });
 
 function displayToolTip(element, icon1, icon2, action = null) {
     const tooltip = document.getElementById(element);
+    let tooltipTimeout;
 
     if (element === 'passwords' || element === 'history') {
         tooltip.addEventListener('click', function (e) {
             e.preventDefault();
             chrome.tabs.create({ url: action });
         });
-    };
+    }
 
     tooltip.addEventListener('mouseenter', function (e) {
         const tooltip = this.parentElement.firstElementChild;
         const icon = this.firstElementChild;
 
+        // Clear any existing timeout
+        clearTimeout(tooltipTimeout);
+
         // Remove hiding class and stop any ongoing animation
         tooltip.classList.remove('hiding');
-        tooltip.style.visibility = 'visible'; // Ensure it's visible first
+        tooltip.style.visibility = 'visible';
 
-        // Apply the animation after a tiny delay to ensure the browser registers the change
-        icon.classList.remove(icon1);
-        icon.classList.add(icon2);
-        tooltip.classList.add('visible');
-
+        // Apply the animation after a tiny delay
+        requestAnimationFrame(() => {
+            icon.classList.remove(icon1);
+            icon.classList.add(icon2);
+            tooltip.classList.add('visible');
+        });
     });
 
     tooltip.addEventListener('mouseleave', function (e) {
@@ -1695,11 +1747,11 @@ function displayToolTip(element, icon1, icon2, action = null) {
         tooltip.classList.remove('visible');
         tooltip.classList.add('hiding');
 
-        // After animation completes, reset
-        setTimeout(() => {
+        // Set a timeout to hide the tooltip after animation completes
+        tooltipTimeout = setTimeout(() => {
             tooltip.classList.remove('hiding');
             tooltip.style.visibility = 'hidden';
-        }, 100);
+        }, 200); // Match this with your CSS animation duration
     });
 }
 

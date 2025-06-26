@@ -7,20 +7,16 @@
   <link rel="stylesheet" href="/assets/css/popup.css">
 </head>
 <body>
-  <h1 class="title">Site Tracker</h1>
-  <div class="content">
-    <div class="btn-container">
-      <button type="button" class="btn" id="add-site">
-        <i class="fas fa-plus"></i>
-      </button>
-      <button type="button" class="btn" id="export-site">
-        <i class="fas fa-file-export"></i>
-      </button>
-    </div>
-    <div class="sites-container">
+  <div class="container">
+    <h1 class="title">Content Summarizer</h1>
+    <button class="summarize-btn">
+      <i class="fas fa-magic"></i>
+      Summarize
+    </button>
+    <div class="text-container">
+      <p class="summary-text">Your summary will appear here...</p>
     </div>
   </div>
-  <div class="status" id="status"></div>
-  <script src="/assets/js/popup.js"></script>
+  <script type="module" src="/assets/js/popup.js"></script>
 </body>
 </html>
