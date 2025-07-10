@@ -635,8 +635,6 @@ figure:hover {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
   border-bottom: 1px solid rgba(218, 218, 218, 0.1);
   cursor: move;
 }
@@ -645,33 +643,23 @@ figure:hover {
   flex-grow: 1;
   overflow-y: auto;
   padding: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(218, 218, 218, 0.2) transparent;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
   scroll-behavior: smooth;
 }
 
 .settings-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.settings-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.settings-body::-webkit-scrollbar-thumb {
-  background-color: rgba(218, 218, 218, 0.2);
-  border-radius: 10px;
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .settings-container {
   width: 400px;
-  height: 400px;
+  height: 500px;
   position: absolute;
   bottom: 10px;
   left: 10px;
   background: rgba(23, 23, 23, 0.85);
   border: 1px solid rgba(218, 218, 218, 0.2);
-  border-radius: 16px;
   z-index: 2;
   transform: translateY(100%);
   opacity: 0;
@@ -1777,6 +1765,9 @@ figure:hover {
   border-radius: 0 10px 10px 0;
 
 }
+.dev-label {
+  font-size: 0.5rem;
+}
 
 .dev-pull-out.expanded {
   left: 160px;
@@ -1785,7 +1776,7 @@ figure:hover {
 .dev-panel {
   position: absolute;
   top: -1px;
-  left: -167px;
+  left: -220px;
   background: rgba(23, 23, 23, 0.4);
   border: 1px solid rgba(218, 218, 218, 0.3);
   backdrop-filter: blur(10px);
@@ -1838,4 +1829,191 @@ figure:hover {
 
 .dev-panel-content a:hover {
   color: white;
+}
+
+
+.bookmarks-container {
+  position: absolute;
+  top: 10%;
+  left: 20%;
+  width: 400px;
+  max-height: 30vh;
+  background: rgba(23, 23, 23, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(218, 218, 218, 0.3);
+  padding: 20px;
+  /* Start hidden by default */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-100%);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.bookmarks-container .base {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bookmarks-container .bookmark {
+  color: #d9d9d9;
+  padding: 4px 0;
+}
+
+.bookmarks-container .children {
+  list-style: none;
+  padding-left: 20px;
+  margin: 0;
+}
+
+.bookmarks-container .bookmark {
+  max-width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.bookmarks-container .bookmark.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.bookmarks-container .bookmark:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.bookmarks-container .bookmark.collapsed .children {
+  display: none;
+}
+
+.drop-zone-indicator {
+  transition: all 0.2s ease;
+  border-radius: 2px;
+}
+
+.drop-zone-indicator:hover {
+  background-color: #66BB6A !important;
+  transform: scaleY(1.5);
+}
+
+/* Prevent text selection during drag */
+.bookmarks-container {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Custom scrollbar for bookmarks container */
+.bookmarks-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bookmarks-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.bookmarks-container::-webkit-scrollbar-thumb {
+  background: rgba(218, 218, 218, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.bookmarks-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(218, 218, 218, 0.5);
+}
+
+/* Drag ghost styles */
+.drag-ghost {
+  pointer-events: none;
+  z-index: 10000;
+  opacity: 0.8;
+  transform: rotate(5deg);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  border-radius: 4px;
+  background: rgba(23, 23, 23, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.contents {
+  border-radius: 5px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.bookmark-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ellipsis icon styles */
+.fa-ellipsis-vertical {
+  font-size: 1rem;
+  color: #d9d9d9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.fa-ellipsis-vertical:hover {
+  transform: scale(1.02);
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Favicon styles for bookmarks */
+.bookmark-favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.bookmark-favicon:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Folder icon styles for bookmarks */
+.bookmarks-container .bookmark.folder .fa-folder,
+.bookmarks-container .bookmark.folder .fa-folder-open {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+  transition: transform 0.2s ease;
+}
+
+.bookmarks-container .bookmark.folder:hover .fa-folder,
+.bookmarks-container .bookmark.folder:hover .fa-folder-open {
+  transform: scale(1.1);
+}
+
+/* File icon styles for bookmarks (fallback) */
+.bookmarks-container .bookmark.file .fa-file {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+  transition: transform 0.2s ease;
+}
+
+.bookmarks-container .bookmark.file:hover .fa-file {
+  transform: scale(1.1);
 }

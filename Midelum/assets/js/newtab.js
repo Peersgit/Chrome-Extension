@@ -1703,6 +1703,51 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // Bookmark button functionality
+    const bookmarkButton = document.getElementById("bookmarks");
+    const bookmarkContainer = document.querySelector(".bookmarks-container");
+    
+    if (bookmarkButton) {
+        bookmarkButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            
+            // Check if container is currently visible
+            const isVisible = bookmarkContainer.style.visibility === "visible" && 
+                             bookmarkContainer.style.opacity !== "0";
+            
+            if (!isVisible) {
+                // Show the container with slide-down animation
+                bookmarkContainer.style.visibility = "visible";
+                bookmarkContainer.style.opacity = "0";
+                bookmarkContainer.style.transform = "translateY(-100%)";
+                
+                // Force reflow
+                bookmarkContainer.offsetHeight;
+                
+                // Animate to visible state
+                bookmarkContainer.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+                bookmarkContainer.style.opacity = "1";
+                bookmarkContainer.style.transform = "translateY(0)";
+                
+                // Remove transition after animation
+                setTimeout(() => {
+                    bookmarkContainer.style.transition = "";
+                }, 300);
+            } else {
+                // Hide the container with slide-up animation
+                bookmarkContainer.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+                bookmarkContainer.style.opacity = "0";
+                bookmarkContainer.style.transform = "translateY(-100%)";
+                
+                // Hide after animation completes
+                setTimeout(() => {
+                    bookmarkContainer.style.visibility = "hidden";
+                    bookmarkContainer.style.transition = "";
+                }, 300);
+            }
+        });
+    }
+
 });
 
 function displayToolTip(element, icon1, icon2, action = null) {
@@ -1761,6 +1806,7 @@ document.addEventListener('DOMContentLoaded', function () {
     displayToolTip('passwords', 'fa-lock', 'fa-unlock', 'chrome://password-manager/passwords');
     displayToolTip('history', 'fa-book-open', 'fa-book-open-reader', 'chrome://history/');
     displayToolTip('settings', 'fa-gear', 'fa-gears');
+    displayToolTip('bookmarks', 'fa-bookmark', 'fa-bookmark');
 
 
 });
