@@ -582,8 +582,8 @@ function setupBookmarkChangeListeners() {
             console.log('Bookmark moved:', moveInfo);
             refreshBookmarks();
         }},
-        { name: 'onReordered', handler: (id, reorderInfo) => {
-            console.log('Bookmark reordered:', reorderInfo);
+        { name: 'onChildrenReordered', handler: (id, reorderInfo) => {
+            console.log('Bookmark children reordered:', reorderInfo);
             refreshBookmarks();
         }},
         { name: 'onImportBegan', handler: () => {

@@ -1,7 +1,12 @@
 chrome.runtime.onInstalled.addListener(function() {
     chrome.storage.sync.set({ overrideNewTab: true });
-  });
-  
+    // Initialize the background fetching when extension is installed
+    initialize();
+});
+
+// Also initialize when the service worker starts
+initialize();
+
   // Listen for messages from popup
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === 'toggleOverride') {
@@ -29,6 +34,16 @@ chrome.runtime.onInstalled.addListener(function() {
           }
         });
       }
+    } else if (request.action === 'fetchTest') {
+      // Manual test trigger
+      fetchTest().then(sendResponse);
+      return true; // Keep the message channel open for async response
+    } else if (request.action === 'fetchNewBackground') {
+      // Manual background fetch trigger
+      fetchNewBackground().then(() => {
+        fetchTest().then(sendResponse);
+      });
+      return true; // Keep the message channel open for async response
     }
   });
 
@@ -40,10 +55,14 @@ chrome.runtime.onInstalled.addListener(function() {
 
 // Check if we need to fetch a new background based on last update time
 async function checkAndFetchBackground() {
+    console.log('checkAndFetchBackground called');
     try {
         // Get the last update timestamp and current query index from storage
         const data = await chrome.storage.local.get(['lastUpdateTime', 'lastQueryIndex']);
         const currentDate = new Date();
+        
+        console.log('Current data from storage:', data);
+        console.log('Current date:', currentDate.toDateString());
         
         // If no previous update or it's a different day, fetch new background
         if (!data.lastUpdateTime) {
@@ -54,12 +73,17 @@ async function checkAndFetchBackground() {
             const lastUpdateDay = lastUpdate.toDateString();
             const currentDay = currentDate.toDateString();
             
+            console.log('Last update day:', lastUpdateDay);
+            console.log('Current day:', currentDay);
+            
             if (lastUpdateDay !== currentDay) {
                 console.log('New day detected. Fetching new background.');
                 
                 // Advance to next query for the new day
                 const currentQueryIndex = data.lastQueryIndex || 0;
                 const nextQueryIndex = (currentQueryIndex + 1) % 12; // 12 queries total
+                
+                console.log('Advancing from query index', currentQueryIndex, 'to', nextQueryIndex);
                 
                 // Update the query index before fetching
                 await chrome.storage.local.set({ 'lastQueryIndex': nextQueryIndex });
@@ -74,8 +98,10 @@ async function checkAndFetchBackground() {
     }
 }
 
+
 // Fetch new background from Pexels
 async function fetchNewBackground() {
+    console.log('fetchNewBackground called');
     const PEXELS_API_KEY = 'dzbjwuoWYT5z7GYPvxTgg8gOr90DcoSc3DlThon40FKkblrZdf0H7Q9F';
 
     const queries = [
@@ -100,6 +126,8 @@ async function fetchNewBackground() {
         let queryIndex = storageData.lastQueryIndex || 0;
         let page = storageData.currentPage || 0;
         let allDetails = storageData.allDetails || [];
+        
+        console.log('Starting fetch with queryIndex:', queryIndex, 'page:', page, 'allDetails length:', allDetails.length);
         
         // Convert allDetails to a Set for faster lookup (if it's an array)
         const usedImages = new Set();
@@ -146,6 +174,7 @@ async function fetchNewBackground() {
                         });
                         
                         console.log(`New background fetched: ${query} (page ${page})`);
+                        console.log('Updated allDetails:', allDetails);
                         imageFound = true;
                         break;
                     }
@@ -213,9 +242,14 @@ function setupDailyAlarm() {
 
 // Initialize on extension load
 async function initialize() {
+    console.log('Initializing background script...');
+    
     // Set up the daily alarm
     setupDailyAlarm();
     
     // Check if we need to fetch a background now
     await checkAndFetchBackground();
+    
+    console.log('Background script initialization complete');
 }
+

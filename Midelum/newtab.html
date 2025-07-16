@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <div id="top-links-container"></div>
 
+    <div id="top-links-container"></div>
     <div class="main-content">
         <figure id="cube">
             <div class="face top"><p id="s"></p></div>
@@ -20,21 +20,6 @@
             <h1 id="b-h"></h1><h1 id="b-m"></h1><h1 id="b-s"></h1>
         </div>
 
-    </div>
-
-
-    <div class="dev-pull-out">
-        <a class="dev-pull-out-tab"><i class="dev-icon fa-solid fa-caret-right"></i></a>
-        <div class="dev-panel">
-            <div class="dev-panel-content">
-                <h4>Developer Panel</h4>
-                <ul>
-                    <li><a href="http://localhost:8000">Localhost</a></li>
-                    <li><a href="http://127.0.0.1:8000">127.0.0.1</a></li>
-                    <li><a href="http://127.0.0.1:8000/cleetus">Cleetus</a></li>
-                </ul>
-            </div>
-        </div>
     </div>
 
     <div id="myModal" class="modal">
@@ -65,105 +50,86 @@
         </div>
     </div>
 
-    <div class="bottom-buttons-container">
-        <div class="btm-button password-button">
-            <div class="tool-tip">
-                <p>Passwords</p>
-            </div>
-            <a id="passwords" class="hover-c" href="#">
-                <i class="fa-solid fa-lock"></i>
-            </a>
-        </div>
-        <div class="btm-button settings-button">
-            <div class="tool-tip">
-                <p>Extension Settings</p>
-            </div>
-            <a id="settings" class="hover-c closed" href="#">
-                <i class="fa-solid fa-gear"></i>
-            </a>
-        </div>
-        <div class="btm-button history-button">
-            <div class="tool-tip">
-                <p>History</p>
-            </div>
-            <a id="history" class="hover-c" href="#">
-                <i class="fa-solid fa-book-open"></i>
-            </a>
-        </div>
-        <div class="btm-button bookmark-button">
-            <div class="tool-tip">
-                <p>Bookmarks</p>
-            </div>
-            <a id="bookmarks" class="hover-c" href="#">
-                <i class="fa-solid fa-bookmark"></i>
-            </a>
-        </div>
-    </div>
-    
-    <!-- <a id="settings" class="btm-button settings-button closed"><i class="fa-solid fa-gear"></i></a> -->
-    
-    <!-- <a id="history" class="btm-button history-button" href="#"><i class="fa-solid fa-book-open"></i></a> -->
-
-    <div class="settings-container">
-        <div class="drag-bar" id="drag">
-            <h1 class="s-h">Settings</h1>
-            <div class="exit" id="close-settings">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
+    <div class="pop-out hidden">
+        <div class="pull-out">
+            <div class="pull-out-content">
+                <a class="dev-pull-out-tab"><i class="fa-solid fa-caret-right"></i></a>
             </div>
         </div>
-        <div class="settings-body">
-            <div class="setting-row">
-                <span>Fruequently Visited</span>
-                <input type="checkbox" id="freq-v" class="custom-checkbox" name="freq-v" value="fv">
+        <div class="pop-out-content">
+            <div class="section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="chrome://settings/passwords">Passwords</a></li>
+                    <li><a href="chrome://history">History</a></li>
+                    <li><a id="bookmarks" href="chrome://bookmarks">Bookmarks</a></li>
+                    <li><a href="http://localhost">Localhost</a></li>
+                    <li><a href="http://127.0.0.1">127.0.0.1</a></li>
+                    <li><a href="http://127.0.0.1:8000/Cleetus">cleetus (127.0.0.1:8000/Cleetus)</a></li>
+                </ul>
             </div>
-            <div class="setting-row">
-                <span>Weather</span>
-                <input type="checkbox" id="weather" class="custom-checkbox" name="weather" value="weather">
-            </div>
-            <div class="setting-row">
-                <span>Search Bar</span>
-                <input type="checkbox" id="searchCheck" class="custom-checkbox" name="searchCheck" value="searchCheck">
-            </div>
-            <div class="setting-row">
-                <span>Image Favorites</span>
-                <i id="img-fav" class="fa-solid fa-pen-to-square"></i>
-            </div>
-            <div class="setting-row">
-                <div data-id="color-picker-backround" style="display: flex; justify-content: center; align-items: center;">
-                    <span>Clock Type</span>
-                    <i class="fa-solid fa-rotate-left" style="margin-left: 8px;" title="Reset to default"></i>
-                    <i id="clockSettingsToggle" class="fa-solid fa-angle-down"></i>
-                </div>
-                <div>
-                    <input type="checkbox" id="clock-type-1" class="custom-checkbox me-2" name="clock-type-1" value="clock-type-1">
-                    <input type="checkbox" id="clock-type-2" class="custom-checkbox" name="clock-type-2" value="clock-type-2">
+            
+            <div class="section">
+                <h3>Favorites</h3>
+                <div id="img-fav" class="setting-item">
+                    <span>Background Images</span>
+                    <i class="fa-solid fa-images"></i>
                 </div>
             </div>
-            <div class="setting-row" id="clock-setting-1">
-                <span class="ms-3">Cube Background</span>
-                <div data-id="color-picker-backround">
-                    <div id="color-picker-background"></div>
+            
+            <div class="section">
+                <h3>Settings</h3>
+                <div class="setting-item">
+                    <span>Frequently Visited</span>
+                    <input type="checkbox" id="freq-v" class="custom-checkbox" name="freq-v" value="fv">
                 </div>
-            </div>
-            <div class="setting-row" id="clock-setting-2">
-                <span class="ms-3">Cube Text Shadow</span>
-                <div data-id="color-picker-shadow">
-                    <div id="color-picker-shadow"></div>
+                <div class="setting-item">
+                    <span>Weather</span>
+                    <input type="checkbox" id="weather" class="custom-checkbox" name="weather" value="weather">
                 </div>
-            </div>
-            <div class="setting-row" id="clock-setting-3">
-                <span class="ms-3">Cube Text Color</span>
-                <div data-id="color-picker-text">
-                    <div id="color-picker-text"></div>
+                <div class="setting-item">
+                    <span>SearchBar</span>
+                    <input type="checkbox" id="searchCheck" class="custom-checkbox" name="searchCheck" value="searchCheck">
                 </div>
-            </div>
-            <div class="setting-row" id="clock-setting-4">
-                <span class="ms-3">Cube Border Color</span>
-                <div dat-id="color-picker-border">
-                    <div id="color-picker-border"></div>
+                <div class="setting-item">
+                    <span>Accent Color</span>
+                    <div data-id="color-picker-accent">
+                        <div id="color-picker-accent"></div>
+                    </div>                </div>
+                <div class="setting-item">
+                    <div data-id="color-picker-backround" style="display: flex; justify-content: center; align-items: center;">
+                        <span>Clock Type</span>
+                        <i class="fa-solid fa-rotate-left" style="margin-left: 8px;" title="Reset to default"></i>
+                        <i id="clockSettingsToggle" class="fa-solid fa-angle-down"></i>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="clock-type-1" class="custom-checkbox me-2" name="clock-type-1" value="clock-type-1">
+                        <input type="checkbox" id="clock-type-2" class="custom-checkbox" name="clock-type-2" value="clock-type-2">
+                    </div>
+                </div>
+                <div class="setting-item" id="clock-setting-1">
+                    <span class="ms-3">Cube Background</span>
+                    <div data-id="color-picker-backround">
+                        <div id="color-picker-background"></div>
+                    </div>
+                </div>
+                <div class="setting-item" id="clock-setting-2">
+                    <span class="ms-3">Cube Text Shadow</span>
+                    <div data-id="color-picker-shadow">
+                        <div id="color-picker-shadow"></div>
+                    </div>
+                </div>
+                <div class="setting-item" id="clock-setting-3">
+                    <span class="ms-3">Cube Text Color</span>
+                    <div data-id="color-picker-text">
+                        <div id="color-picker-text"></div>
+                    </div>
+                </div>
+                <div class="setting-item" id="clock-setting-4">
+                    <span class="ms-3">Cube Border Color</span>
+                    <div dat-id="color-picker-border">
+                        <div id="color-picker-border"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -194,7 +160,7 @@
 
 
     <div class="img-stats">
-        <i id="add-to-fav" class="fa-solid fa-plus" title="Add to Favorites"></i>
+        <i id="add-to-fav" class="add-image fa-solid fa-plus" title="Add to Favorites"></i>
         <h2 id="photographer" class="photographer">matt mcman</h2>
         <a id="photographer-url" class="name" target="_blank" href="">Visit this photographers page</a>
     </div>
@@ -283,7 +249,6 @@
     <script src="/assets/js/pickr.min.js"></script>
     <script src="/assets/js/newtab.js"></script>
     <script src="/assets/js/bookmarks.js"></script>
-
     
 </body>
 </html>

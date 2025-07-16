@@ -1,4 +1,5 @@
 let allFrequentBookmarks = [];
+let accentPickerInitialized = false;
 
 const clock_type_1 = document.getElementById("clock-type-1");
 const clock_type_2 = document.getElementById("clock-type-2");
@@ -17,11 +18,7 @@ frequentlyVisitedCheckbox.addEventListener("change", handleFrequentlyVisitedChan
 weatherCheckbox.addEventListener("change", handleWeatherChange);
 searchCheckbox.addEventListener("change", handleSearchBarChange);
 
-const drag_bar = document.getElementById("drag");
-const parent_container = drag_bar.parentElement; // Get the parent container
-let isDragging = false;
-let initialX, initialY; // Store the initial position
-let offsetX, offsetY; // Store the initial offset
+// Drag functionality removed - no longer needed with new HTML structure
 
 const add_to_favorites = document.getElementById("add-to-fav");
 
@@ -127,11 +124,9 @@ const alldownloadButton = document.getElementById("download-all");
 
 alldownloadButton.addEventListener("click", function (e) {
     e.preventDefault();
-    console.log("Downloading all images...");
     
     chrome.storage.local.get(['favorites'], function (result) {
         const favorites = result.favorites || [];
-        console.log('Favorites retrieved from storage:', favorites);
         
         if (favorites.length === 0) {
             alert("No favorites to download");
@@ -184,24 +179,51 @@ add_to_favorites.addEventListener("click", function (e) {
 favoritesDialog.addEventListener("click", (event) => {
     const modal = document.getElementById("fav-modal");
     const modalBody = modal.querySelector(".modal-bod");
+    const popOut = document.querySelector(".pop-out");
+
+    // Hide the pop-out if it's visible
+    if (popOut && !popOut.classList.contains("hidden")) {
+        popOut.classList.add("hidden");
+        const caretIcon = document.querySelector('.dev-pull-out-tab i');
+        if (caretIcon) {
+            caretIcon.className = 'fa-solid fa-caret-right';
+        }
+    }
 
     // Clear any existing list items
     modalBody.innerHTML = '';
 
     // Show the modal immediately
     modal.style.display = "flex";
+    
+    // Add a small delay to trigger the fade-in animation
+    setTimeout(() => {
+        modal.classList.add("show");
+    }, 10);
 
-    // Create a loading indicator
-    const loadingElement = document.createElement("div");
-    loadingElement.className = "loading-favorites";
-    loadingElement.textContent = "Loading favorites...";
-    modalBody.appendChild(loadingElement);
+                // Create a loading indicator
+            const loadingElement = document.createElement("div");
+            loadingElement.className = "loading-favorites";
+            loadingElement.textContent = "Loading favorites...";
+            modalBody.appendChild(loadingElement);
+            
+            // Create a progress indicator
+            const progressElement = document.createElement("div");
+            progressElement.className = "loading-progress";
+            progressElement.textContent = "Loading... 0 of 0 images";
+            modalBody.appendChild(progressElement);
 
     // Get the favorites and populate the modal
     getFavorites()
         .then(favorites => {
             // Remove loading indicator
             modalBody.removeChild(loadingElement);
+            
+            // Update progress indicator with actual count
+            const progressElement = modalBody.querySelector('.loading-progress');
+            if (progressElement) {
+                progressElement.textContent = `Loading... 0 of ${favorites.length} images`;
+            }
 
             // Check if there are any favorites
             if (favorites.length === 0) {
@@ -216,86 +238,127 @@ favoritesDialog.addEventListener("click", (event) => {
             const favoritesList = document.createElement("ul");
             favoritesList.className = "favorites-list";
 
-            // Add each favorite to the list
-            favorites.forEach(favorite => {
-                const listItem = document.createElement("li");
-                listItem.className = "favorite-item";
+            // Add each favorite to the list progressively
+            const addFavoritesProgressively = async (favorites, startIndex = 0) => {
+                const batchSize = 3; // Load 3 images at a time
+                const endIndex = Math.min(startIndex + batchSize, favorites.length);
+                
+                // Update loading progress
+                const progressElement = modalBody.querySelector('.loading-progress');
+                if (progressElement) {
+                    progressElement.textContent = `Loading... ${endIndex} of ${favorites.length} images`;
+                }
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    const favorite = favorites[i];
+                    const listItem = document.createElement("li");
+                    listItem.className = "favorite-item";
 
-                // Create the item's HTML structure
-                listItem.innerHTML = `
-                    <div class="favorite-image">
-                        <img src="${favorite.backgroundImage}" alt="Background image" class="thumbnail">
-                    </div>
-                    <div class="favorite-info">
-                        <span class="photographer-name">${favorite.photographer || 'Unknown'}</span>
-                        <i class="fa-solid fa-file-arrow-down" title="Download Image">
-                            <div class="tool-tip" style="bottom: calc(100% + 10px); left: 50%;">
-                                <p>Download Image</p>
+                    // Create the item's HTML structure with a placeholder
+                    listItem.innerHTML = `
+                        <div class="favorite-image">
+                            <div class="image-placeholder">
+                                <i class="fa-solid fa-image"></i>
                             </div>
-                        </i>
-                        <i class="fa-solid fa-trash" title="Remove Image"></i>
-                    </div>
-                `;
+                            <img src="${favorite.backgroundImage}" alt="Background image" class="thumbnail" loading="lazy">
+                            <div class="favorite-info">
+                                <span class="photographer-name">${favorite.photographer || 'Unknown'}</span>
+                                <div class="favorite-actions">
+                                    <i class="fa-solid fa-file-arrow-down" title="Download Image"></i>
+                                    <i class="fa-solid fa-trash" title="Remove Image"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
 
-                // Add the item to the list first
-                favoritesList.appendChild(listItem);
+                    // Add the item to the list
+                    favoritesList.appendChild(listItem);
 
-                // Now find the icons within this specific list item
-                const downloadButton = listItem.querySelector(".fa-file-arrow-down");
-                const trashButton = listItem.querySelector(".fa-trash");
+                    // Handle image loading
+                    const img = listItem.querySelector('.thumbnail');
+                    const placeholder = listItem.querySelector('.image-placeholder');
+                    
+                    img.onload = () => {
+                        placeholder.style.display = 'none';
+                        img.style.opacity = '1';
+                    };
+                    
+                    img.onerror = () => {
+                        placeholder.innerHTML = '<i class="fa-solid fa-exclamation-triangle"></i>';
+                        placeholder.style.color = '#ff4444';
+                    };
 
-                // Add event listener to the download button
-                downloadButton.addEventListener("click", function (e) {
-                    e.stopPropagation(); // Prevent triggering the parent list item's click
+                    // Add event listeners
+                    const downloadButton = listItem.querySelector(".fa-file-arrow-down");
+                    const trashButton = listItem.querySelector(".fa-trash");
 
-                    // Use Chrome's download API to download the image
-                    chrome.downloads.download({
-                        url: favorite.backgroundImage,
-                        filename: "background.jpg"
-                    });
-                });
+                    // Add event listener to the download button
+                    downloadButton.addEventListener("click", function (e) {
+                        e.stopPropagation(); // Prevent triggering the parent list item's click
 
-                // Add event listener to the trash button
-                trashButton.addEventListener("click", function (e) {
-                    e.stopPropagation(); // Prevent triggering the parent list item's click
-
-                    // Get the image URL from the favorite object
-                    const imageUrl = favorite.backgroundImage;
-
-                    // Use your removeFromFavorites function to delete this item
-                    removeFromFavorites(imageUrl)
-                        .then(removed => {
-                            if (removed) {
-                                // Item was successfully removed from storage
-
-                                display_added_toast("Image removed from Favorites", false);
-
-                                // Remove the list item from the DOM
-                                listItem.classList.add('removing'); // Optional: add animation class
-
-                                // Remove element after animation or immediately
-                                setTimeout(() => {
-                                    listItem.remove();
-
-                                    // Check if the list is now empty
-                                    if (favoritesList.children.length === 0) {
-                                        // Show "no favorites" message
-                                        const noFavoritesElement = document.createElement("div");
-                                        noFavoritesElement.className = "no-favorites";
-                                        noFavoritesElement.textContent = "No favorites added yet";
-                                        modalBody.appendChild(noFavoritesElement);
-                                    }
-                                }, 300); // Adjust timeout to match your animation duration if used
-                            } else {
-                                display_added_toast("Error: Item not found in favorites", true);
-                            }
-                        })
-                        .catch(error => {
-                            display_added_toast("Error removing favorite", true);
-
+                        // Use Chrome's download API to download the image
+                        chrome.downloads.download({
+                            url: favorite.backgroundImage,
+                            filename: "background.jpg"
                         });
-                });
-            });
+                    });
+
+                    // Add event listener to the trash button
+                    trashButton.addEventListener("click", function (e) {
+                        e.stopPropagation(); // Prevent triggering the parent list item's click
+
+                        // Get the image URL from the favorite object
+                        const imageUrl = favorite.backgroundImage;
+
+                        // Use your removeFromFavorites function to delete this item
+                        removeFromFavorites(imageUrl)
+                            .then(removed => {
+                                if (removed) {
+                                    // Item was successfully removed from storage
+                                    display_added_toast("Image removed from Favorites", false);
+
+                                    // Remove the list item from the DOM
+                                    listItem.classList.add('removing'); // Optional: add animation class
+
+                                    // Remove element after animation or immediately
+                                    setTimeout(() => {
+                                        listItem.remove();
+
+                                        // Check if the list is now empty
+                                        if (favoritesList.children.length === 0) {
+                                            // Show "no favorites" message
+                                            const noFavoritesElement = document.createElement("div");
+                                            noFavoritesElement.className = "no-favorites";
+                                            noFavoritesElement.textContent = "No favorites added yet";
+                                            modalBody.appendChild(noFavoritesElement);
+                                        }
+                                    }, 300); // Adjust timeout to match your animation duration if used
+                                } else {
+                                    display_added_toast("Error: Item not found in favorites", true);
+                                }
+                            })
+                            .catch(error => {
+                                display_added_toast("Error removing favorite", true);
+                            });
+                    });
+                }
+
+                // If there are more items to load, schedule the next batch
+                if (endIndex < favorites.length) {
+                    setTimeout(() => {
+                        addFavoritesProgressively(favorites, endIndex);
+                    }, 150); // Small delay between batches
+                } else {
+                    // All images loaded, remove progress indicator
+                    const progressElement = modalBody.querySelector('.loading-progress');
+                    if (progressElement) {
+                        progressElement.remove();
+                    }
+                }
+            };
+
+            // Start loading favorites progressively
+            addFavoritesProgressively(favorites);
 
             // Add the list to the modal body
             modalBody.appendChild(favoritesList);
@@ -308,7 +371,20 @@ favoritesDialog.addEventListener("click", (event) => {
     // Set up the close button event listener
     const closeButton = document.querySelector(".close-fav-modal");
     closeButton.addEventListener("click", () => {
-        modal.style.display = "none";
+        modal.classList.remove("show");
+        setTimeout(() => {
+            modal.style.display = "none";
+        }, 300);
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+            modal.classList.remove("show");
+            setTimeout(() => {
+                modal.style.display = "none";
+            }, 300);
+        }
     });
 
 });
@@ -382,11 +458,21 @@ function handleBookmarks(bookmarks, sortedHistory) {
         link.target = "_blank";
 
         const icon = document.createElement("img");
-        icon.src = `https://www.google.com/s2/favicons?domain=${new URL(bm.url).hostname}&sz=32`;
-
-        // icon.src = faviconURL(bm.url);
+        try {
+            const hostname = new URL(bm.url).hostname;
+            icon.src = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+        } catch (error) {
+            // If URL parsing fails, use a fallback icon
+            icon.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMTZDMzU4NCAxNiAxNiAzNTg0IDE2IDhDMTYgMy41ODE3MiAxOS41ODE3IDAgMjQgMEMyOC40MTgzIDAgMzIgMy41ODE3MiAzMiA4QzMyIDEyLjQxODMgMjguNDE4MyAxNiAyNCAxNloiIGZpbGw9IiM2NjY2NjYiLz4KPC9zdmc+";
+        }
+        
         icon.className = "site-icon";
         icon.alt = `${bm.title} icon`;
+        
+        // Add error handling for favicon loading
+        icon.onerror = () => {
+            icon.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMTZDMzU4NCAxNiAxNiAzNTg0IDE2IDhDMTYgMy41ODE3MiAxOS41ODE3IDAgMjQgMEMyOC40MTgzIDAgMzIgMy41ODE3MiAzMiA4QzMyIDEyLjQxODMgMjguNDE4MyAxNiAyNCAxNloiIGZpbGw9IiM2NjY2NjYiLz4KPC9zdmc+";
+        };
 
         const span = document.createElement("span");
         span.textContent = bm.title;
@@ -823,7 +909,10 @@ function displaySettingsToggle(show = true) {
     if (show) {
         // clockSettingsToggle.classList.add('rotate');
         clockSettingsToggle.style.display = 'block';
-        clockUpdates();
+        // Add a small delay to ensure DOM elements are rendered before initializing pickers
+        setTimeout(() => {
+            clockUpdates();
+        }, 100);
     } else {
         clockSettingsToggle.style.display = 'none';
     }
@@ -841,19 +930,17 @@ function displayClockSettings(show = true) {
     const settingsBody = document.querySelector('.settings-body');
 
     if (show) {
-        // Show animation sequence
+        // Show animation sequence with staggered delays
         settingRows.forEach((row, index) => {
             if (row) {
-                row.style.display = 'flex'; // Set to flex first to enable animation
-                row.classList.remove('hidden');
-                row.classList.add('animate');
-
-                // If this is the last row, scroll to it after a short delay
-                if (index === settingRows.length - 1) {
-                    setTimeout(() => {
-                        row.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    }, 100); // Small delay to ensure the element is visible
-                }
+                // Set display to flex first
+                row.style.display = 'flex';
+                
+                // Add staggered delay for each item
+                setTimeout(() => {
+                    row.classList.remove('hidden');
+                    row.classList.add('animate');
+                }, index * 100); // 100ms delay between each item
             }
         });
     } else {
@@ -861,13 +948,17 @@ function displayClockSettings(show = true) {
         for (let i = settingRows.length - 1; i >= 0; i--) {
             const row = settingRows[i];
             if (row) {
-                row.classList.remove('animate');
-                row.classList.add('hidden');
-
-                // Set display:none after the animation completes
+                const delay = (settingRows.length - 1 - i) * 100; // Reverse delay
+                
                 setTimeout(() => {
-                    row.style.display = 'none';
-                }, 300); // Match this to your transition duration
+                    row.classList.remove('animate');
+                    row.classList.add('hidden');
+                    
+                    // Set display:none after the animation completes
+                    setTimeout(() => {
+                        row.style.display = 'none';
+                    }, 300); // Match this to your transition duration
+                }, delay);
             }
         }
     }
@@ -895,6 +986,9 @@ clock_type_2.addEventListener("change", (e) => {
         display_normal_clock();
         display_toast("clock-basic", clock_type_2);
         displaySettingsToggle(false);
+        // Clean up only clock-specific picker instances when switching to basic clock
+        // (preserves accent color picker)
+        cleanupClockPickers();
         // displayClockSettings(false);
     } else {
         // Prevent unchecking if user clicked on an already checked box
@@ -1048,179 +1142,7 @@ function initializeFromLocalStorage() {
 }
 
 
-// Listen for mousedown on the drag bar
-let parentWidth, parentHeight;
-
-// Get parent container dimensions
-function updateContainerDimensions() {
-    const parentRect = parent_container.getBoundingClientRect();
-    parentWidth = parentRect.width;
-    parentHeight = parentRect.height;
-}
-
-drag_bar.addEventListener("mousedown", (e) => {
-    // Prevent default behavior (like text selection)
-    e.preventDefault();
-
-    // Update container dimensions
-    updateContainerDimensions();
-
-    // Start dragging
-    isDragging = true;
-
-    // Get the current mouse position
-    initialX = e.clientX;
-    initialY = e.clientY;
-
-    // Get the current position of the parent container
-    const parentRect = parent_container.getBoundingClientRect();
-    offsetX = initialX - parentRect.left;
-    offsetY = initialY - parentRect.top;
-
-    // Add a class to the body to disable text selection
-    document.body.classList.add("no-select");
-});
-
-function loadSavedPosition() {
-    const savedX = localStorage.getItem("containerX");
-    const savedY = localStorage.getItem("containerY");
-
-    // Update container dimensions
-    updateContainerDimensions();
-
-    if (savedX !== null && savedY !== null) {
-        // Ensure the position is within the viewport
-        const adjustedX = constrainToViewport(parseInt(savedX), 'x');
-        const adjustedY = constrainToViewport(parseInt(savedY), 'y');
-
-        parent_container.style.left = `${adjustedX}px`;
-        parent_container.style.top = `${adjustedY}px`;
-        parent_container.style.right = "auto"; // Switch to left positioning
-    }
-}
-
-// Constrain a coordinate to ensure the element stays within the viewport
-function constrainToViewport(value, axis) {
-    if (axis === 'x') {
-        // Get the viewport width
-        const viewportWidth = window.innerWidth;
-
-        // Ensure the element isn't off the left edge
-        value = Math.max(0, value);
-
-        // Ensure the element isn't off the right edge
-        value = Math.min(value, viewportWidth - parentWidth);
-    } else if (axis === 'y') {
-        // Get the viewport height
-        const viewportHeight = window.innerHeight;
-
-        // Ensure the element isn't off the top edge
-        value = Math.max(0, value);
-
-        // Ensure the element isn't off the bottom edge
-        value = Math.min(value, viewportHeight - parentHeight);
-    }
-
-    return value;
-}
-
-// Listen for mousemove on the entire document
-document.addEventListener("mousemove", (e) => {
-    // Only track movement if currently dragging
-    if (isDragging) {
-        // Prevent default behavior
-        e.preventDefault();
-
-        // Get the current mouse position
-        const x = e.clientX;
-        const y = e.clientY;
-
-        // Calculate the new position of the container
-        let newLeft = x - offsetX;
-        let newTop = y - offsetY;
-
-        // Constrain the position to the viewport
-        newLeft = constrainToViewport(newLeft, 'x');
-        newTop = constrainToViewport(newTop, 'y');
-
-        // Update the position of the parent container
-        parent_container.style.left = `${newLeft}px`;
-        parent_container.style.top = `${newTop}px`;
-        // If the container was using "right" positioning, we need to change to "left"
-        parent_container.style.right = "auto";
-    }
-});
-
-function savePosition(x, y) {
-    localStorage.setItem("containerX", x);
-    localStorage.setItem("containerY", y);
-}
-
-// Listen for mouseup on the entire document
-document.addEventListener("mouseup", (e) => {
-    // Only do something if we were dragging
-    if (isDragging) {
-        // Stop dragging
-        isDragging = false;
-
-        // Remove the no-select class
-        document.body.classList.remove("no-select");
-
-        // Get the final position of the parent container
-        const parentRect = parent_container.getBoundingClientRect();
-        const finalLeft = parentRect.left;
-        const finalTop = parentRect.top;
-
-        // Save the final position
-        savePosition(finalLeft, finalTop);
-    }
-});
-
-// Add this to ensure dragging stops if mouse leaves the window
-document.addEventListener("mouseleave", (e) => {
-    if (isDragging) {
-        isDragging = false;
-
-        // Remove the no-select class
-        document.body.classList.remove("no-select");
-
-        // Get the current position of the parent container
-        const parentRect = parent_container.getBoundingClientRect();
-        const finalLeft = parentRect.left;
-        const finalTop = parentRect.top;
-
-        // Save the position even if drag was canceled
-        savePosition(finalLeft, finalTop);
-    }
-});
-
-// Listen for window resize and adjust position if needed
-window.addEventListener("resize", () => {
-    // Update container dimensions
-    updateContainerDimensions();
-
-    // Get the current position
-    const parentRect = parent_container.getBoundingClientRect();
-    let currentLeft = parentRect.left;
-    let currentTop = parentRect.top;
-
-    // Constrain to the new viewport size
-    const adjustedLeft = constrainToViewport(currentLeft, 'x');
-    const adjustedTop = constrainToViewport(currentTop, 'y');
-
-    // Only update if the position needs to change
-    if (currentLeft !== adjustedLeft || currentTop !== adjustedTop) {
-        parent_container.style.left = `${adjustedLeft}px`;
-        parent_container.style.top = `${adjustedTop}px`;
-
-        // Save the adjusted position
-        savePosition(adjustedLeft, adjustedTop);
-    }
-});
-
-// Call this when the page loads to initialize
-updateContainerDimensions();
-loadSavedPosition();
+// Drag functionality removed - no longer needed with new HTML structure
 
 
 
@@ -1390,11 +1312,38 @@ function handleTextColorChange(color, textPicker, textElements) {
     saveToLocalStorage("clockTextColor", clockTextColor);
 }
 
+function handleAccentColorChange(color, accentPicker) {
+    const colorValue = color.toRGBA().toString();
+    
+
+    // Update CSS custom properties for both primary and secondary accent colors
+    document.documentElement.style.setProperty('--color-blue-4a9eff', colorValue);
+    
+    // Create a slightly lighter version for the gradient
+    const trueColor = color.toRGBA();
+    const red = trueColor[0];
+    const green = trueColor[1];
+    const blue = trueColor[2];
+    
+    // Make the second color slightly lighter (increase brightness by 10%)
+    const lighterRed = Math.min(255, Math.round(red * 1.1));
+    const lighterGreen = Math.min(255, Math.round(green * 1.1));
+    const lighterBlue = Math.min(255, Math.round(blue * 1.1));
+    
+    const secondaryColor = `rgba(${lighterRed}, ${lighterGreen}, ${lighterBlue}, 1)`;
+    document.documentElement.style.setProperty('--color-blue-5ba8ff', secondaryColor);
+
+    const saved = saveToLocalStorage("accentColor", colorValue);
+
+    accentPicker.hide();
+}
+
 function getUserColors() {
     const clockBackground = localStorage.getItem("clockBackground");
     const clockBorderColor = localStorage.getItem("clockBorderColor");
     const clockShadowColor = localStorage.getItem("clockShadowColor");
     const clockTextColor = localStorage.getItem("clockTextColor");
+    const accentColor = localStorage.getItem("accentColor");
 
     // Object to store all found colors
     const savedColors = {};
@@ -1469,32 +1418,82 @@ function getUserColors() {
         }
     }
 
+    if (accentColor) {
+        savedColors.accent = accentColor;
+        
+        // Update CSS custom property
+        document.documentElement.style.setProperty('--color-blue-4a9eff', accentColor);
+        
+        // Also set the secondary color for the gradient
+        const rgbaMatch = accentColor.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]*))?\)/);
+        if (rgbaMatch) {
+            const red = Math.round(parseFloat(rgbaMatch[1]));
+            const green = Math.round(parseFloat(rgbaMatch[2]));
+            const blue = Math.round(parseFloat(rgbaMatch[3]));
+            
+            // Make the second color slightly lighter (increase brightness by 10%)
+            const lighterRed = Math.min(255, Math.round(red * 1.1));
+            const lighterGreen = Math.min(255, Math.round(green * 1.1));
+            const lighterBlue = Math.min(255, Math.round(blue * 1.1));
+            
+            const secondaryColor = `rgba(${lighterRed}, ${lighterGreen}, ${lighterBlue}, 1)`;
+            document.documentElement.style.setProperty('--color-blue-5ba8ff', secondaryColor);
+        }
+    }
+
     return savedColors;
 }
 
-
+// Add a global variable to track picker instances
+let pickerInstances = {};
 
 function colorPicker(id, opacity, defaultColor) {
-    return Pickr.create({
-        el: id,
-        theme: 'nano', // 'classic', 'monolith', or 'nano'
-        defaultRepresentation: 'RGBA',
-        default: defaultColor, // Default color
-        components: {
-            preview: true,
-            opacity: opacity === 1 ? true : false,
-            hue: true,
-            interaction: {
-                hex: true,
-                rgba: true,
-                hsla: false,
-                input: true,
-                clear: false,
-                save: true
-            }
+    // Check if element exists before creating picker
+    const element = document.querySelector(id);
+    if (!element) {
+        console.warn(`Color picker element ${id} not found`);
+        return null;
+    }
+    
+    // Destroy existing picker if it exists
+    if (pickerInstances[id]) {
+        try {
+            pickerInstances[id].destroyAndRemove();
+        } catch (e) {
+            console.warn(`Error destroying existing picker for ${id}:`, e);
         }
-    });
-};
+        delete pickerInstances[id];
+    }
+    
+    try {
+        const picker = Pickr.create({
+            el: id,
+            theme: 'nano', // 'classic', 'monolith', or 'nano'
+            defaultRepresentation: 'RGBA',
+            default: defaultColor, // Default color
+            components: {
+                preview: true,
+                opacity: opacity === 1 ? true : false,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    rgba: true,
+                    hsla: false,
+                    input: true,
+                    clear: false,
+                    save: true
+                }
+            }
+        });
+        
+        // Store the picker instance
+        pickerInstances[id] = picker;
+        return picker;
+    } catch (error) {
+        console.error(`Error creating color picker for ${id}:`, error);
+        return null;
+    }
+}
 
 const colorReset = document.querySelector('.fa-rotate-left');
 
@@ -1504,12 +1503,21 @@ colorReset.addEventListener('click', function () {
     localStorage.removeItem("clockBorderColor");
     localStorage.removeItem("clockShadowColor");
     localStorage.removeItem("clockTextColor");
+    localStorage.removeItem("accentColor");
+
+    // Clean up picker instances before reloading
+    cleanupPickers();
 
     // Reload the page
     location.reload();
 });
 
 function clockUpdates() {
+    // Check if the clock settings are visible before initializing pickers
+    const clockSetting1 = document.getElementById('clock-setting-1');
+    if (!clockSetting1 || clockSetting1.style.display === 'none') {
+        return;
+    }
 
     const saved_colors = getUserColors();
 
@@ -1518,6 +1526,7 @@ function clockUpdates() {
     let shadowColor = "";
     let textColor = "";
     let borderColor = "";
+    let accentColor = "";
 
     if (saved_colors.background) {
         backgroundColor = saved_colors.background;
@@ -1543,11 +1552,27 @@ function clockUpdates() {
         borderColor = "rgba(255, 255, 255, 1)";  // Added alpha value
     }
 
-    // Initialize color picker
+    if (saved_colors.accent) {
+        accentColor = saved_colors.accent;
+    } else {
+        accentColor = "rgba(74, 158, 255, 1)";  // Default blue color
+    }
+
+    // Initialize color pickers with null checks
     const backgroundPicker = colorPicker('#color-picker-background', 1, backgroundColor);
     const shadowPicker = colorPicker('#color-picker-shadow', 0, shadowColor);
     const textPicker = colorPicker('#color-picker-text', 0, textColor);
     const borderPicker = colorPicker('#color-picker-border', 0, borderColor);
+    
+    // Only initialize accent picker if not already done
+    let accentPicker;
+    if (!accentPickerInitialized) {
+        accentPicker = colorPicker('#color-picker-accent', 1, accentColor);
+        if (accentPicker) {
+            accentPicker.on('save', (color) => handleAccentColorChange(color, accentPicker));
+            accentPickerInitialized = true;
+        }
+    }
 
     const text_1 = document.getElementById('s');
     const text_2 = document.getElementById('m');
@@ -1555,11 +1580,54 @@ function clockUpdates() {
 
     const textElements = [text_1, text_2, text_3];
 
-    // Attach handlers to pickers with their required parameters
-    borderPicker.on('save', (color) => handleBorderColorChange(color, borderPicker));
-    backgroundPicker.on('save', (color) => handleBackgroundColorChange(color, backgroundPicker));
-    shadowPicker.on('save', (color) => handleShadowColorChange(color, shadowPicker, textElements));
-    textPicker.on('save', (color) => handleTextColorChange(color, textPicker, textElements));
+    // Attach handlers to pickers with null checks
+    if (borderPicker) {
+        borderPicker.on('save', (color) => handleBorderColorChange(color, borderPicker));
+    }
+    if (backgroundPicker) {
+        backgroundPicker.on('save', (color) => handleBackgroundColorChange(color, backgroundPicker));
+    }
+    if (shadowPicker) {
+        shadowPicker.on('save', (color) => handleShadowColorChange(color, shadowPicker, textElements));
+    }
+    if (textPicker) {
+        textPicker.on('save', (color) => handleTextColorChange(color, textPicker, textElements));
+    }
+}
+
+// Add a function to clean up picker instances
+function cleanupPickers() {
+    Object.keys(pickerInstances).forEach(id => {
+        try {
+            if (pickerInstances[id]) {
+                pickerInstances[id].destroyAndRemove();
+            }
+        } catch (e) {
+            console.warn(`Error destroying picker for ${id}:`, e);
+        }
+    });
+    pickerInstances = {};
+}
+
+// Add a function to clean up only clock-specific color pickers (preserves accent picker)
+function cleanupClockPickers() {
+    const clockPickerIds = [
+        '#color-picker-background',
+        '#color-picker-shadow', 
+        '#color-picker-text',
+        '#color-picker-border'
+    ];
+    
+    clockPickerIds.forEach(id => {
+        if (pickerInstances[id]) {
+            try {
+                pickerInstances[id].destroyAndRemove();
+                delete pickerInstances[id];
+            } catch (e) {
+                console.warn(`Error destroying clock picker for ${id}:`, e);
+            }
+        }
+    });
 }
 
 
@@ -1571,7 +1639,72 @@ document.addEventListener("DOMContentLoaded", function () {
     getLocationAndWeather();
 
     initializeFromLocalStorage();
-    loadSavedPosition();
+
+    // Initialize accent color from localStorage
+    const savedAccentColor = localStorage.getItem("accentColor");
+    
+    // Always set both colors, regardless of saved state
+    let primaryColor, secondaryColor;
+    
+    if (savedAccentColor) {
+        primaryColor = savedAccentColor;
+        
+        // Also set the secondary color for the gradient
+        const rgbaMatch = savedAccentColor.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]*))?\)/);
+        
+        if (rgbaMatch) {
+            const red = Math.round(parseFloat(rgbaMatch[1]));
+            const green = Math.round(parseFloat(rgbaMatch[2]));
+            const blue = Math.round(parseFloat(rgbaMatch[3]));
+            
+            
+            // Make the second color slightly lighter (increase brightness by 10%)
+            const lighterRed = Math.min(255, Math.round(red * 1.1));
+            const lighterGreen = Math.min(255, Math.round(green * 1.1));
+            const lighterBlue = Math.min(255, Math.round(blue * 1.1));
+            
+            secondaryColor = `rgba(${lighterRed}, ${lighterGreen}, ${lighterBlue}, 1)`;
+        } else {
+            // Fallback if regex doesn't match
+            secondaryColor = "rgba(91, 168, 255, 1)";
+        }
+    } else {
+        // Set default color if none saved
+        primaryColor = "rgba(74, 158, 255, 1)";
+        secondaryColor = "rgba(91, 168, 255, 1)";
+    }
+    
+    // Set both CSS variables
+    document.documentElement.style.setProperty('--color-blue-4a9eff', primaryColor);
+    document.documentElement.style.setProperty('--color-blue-5ba8ff', secondaryColor);
+    
+
+    // Verify the gradient is working by checking a specific element
+    setTimeout(() => {
+        const gradientElement = document.querySelector('.section ul li a');
+        if (gradientElement) {
+            const computedStyle = getComputedStyle(gradientElement, '::before');
+        }
+        
+        // Also check if the CSS variables are actually being used
+        const testElement = document.createElement('div');
+        testElement.style.setProperty('--color-blue-4a9eff', primaryColor);
+        testElement.style.setProperty('--color-blue-5ba8ff', secondaryColor);
+        testElement.style.background = 'linear-gradient(180deg, var(--color-blue-4a9eff), var(--color-blue-5ba8ff))';
+    }, 100);
+
+    // Initialize accent color picker for basic clock users
+    if (!accentPickerInitialized) {
+        const accentPickerElement = document.querySelector('#color-picker-accent');
+        if (accentPickerElement) {
+            const accentColor = savedAccentColor || "rgba(74, 158, 255, 1)";
+            const accentPicker = colorPicker('#color-picker-accent', 1, accentColor);
+            if (accentPicker) {
+                accentPicker.on('save', (color) => handleAccentColorChange(color, accentPicker));
+                accentPickerInitialized = true;
+            }
+        }
+    }
 
     displayClockSettings(false);
 
@@ -1622,52 +1755,62 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Get the settings button element
+    // Get the settings button element - updated for new HTML structure
     const settingsButton = document.getElementById("settings");
     const exitButton = document.getElementById("close-settings");
-
     const settingsContainer = document.querySelector(".settings-container");
+    const settingsPopOut = document.querySelector(".pop-out");
 
-    exitButton.addEventListener("click", function (event) {
-        event.preventDefault();
+    // Handle settings functionality for both HTML structures
+    if (exitButton && settingsContainer) {
+        // For newtab2.html structure
+        exitButton.addEventListener("click", function (event) {
+            event.preventDefault();
 
-        // Check if the button has the "open" class
-        if (settingsButton.classList.contains("open")) {
-            // If open, we want to close it
-            settingsContainer.classList.remove("slide-up-fade-in");
-            settingsContainer.classList.add("slide-down-fade-out");
+            // Check if the button has the "open" class
+            if (settingsButton.classList.contains("open")) {
+                // If open, we want to close it
+                settingsContainer.classList.remove("slide-up-fade-in");
+                settingsContainer.classList.add("slide-down-fade-out");
 
-            // Update button classes
-            settingsButton.classList.remove("open");
-            settingsButton.classList.add("closed");
-        }
-
-    });
+                // Update button classes
+                settingsButton.classList.remove("open");
+                settingsButton.classList.add("closed");
+            }
+        });
+    }
 
     // Add click event listener to the settings button
-    settingsButton.addEventListener("click", function (event) {
-        // Prevent default link behavior if this is an anchor tag
-        event.preventDefault();
+    if (settingsButton) {
+        settingsButton.addEventListener("click", function (event) {
+            // Prevent default link behavior if this is an anchor tag
+            event.preventDefault();
 
-        // Check if the button has the "open" class
-        if (settingsButton.classList.contains("open")) {
-            // If open, we want to close it
-            settingsContainer.classList.remove("slide-up-fade-in");
-            settingsContainer.classList.add("slide-down-fade-out");
+            if (settingsContainer) {
+                // For newtab2.html structure
+                if (settingsButton.classList.contains("open")) {
+                    // If open, we want to close it
+                    settingsContainer.classList.remove("slide-up-fade-in");
+                    settingsContainer.classList.add("slide-down-fade-out");
 
-            // Update button classes
-            settingsButton.classList.remove("open");
-            settingsButton.classList.add("closed");
-        } else if (settingsButton.classList.contains("closed")) {
-            // If closed, we want to open it
-            settingsContainer.classList.remove("slide-down-fade-out");
-            settingsContainer.classList.add("slide-up-fade-in");
+                    // Update button classes
+                    settingsButton.classList.remove("open");
+                    settingsButton.classList.add("closed");
+                } else if (settingsButton.classList.contains("closed")) {
+                    // If closed, we want to open it
+                    settingsContainer.classList.remove("slide-down-fade-out");
+                    settingsContainer.classList.add("slide-up-fade-in");
 
-            // Update button classes
-            settingsButton.classList.remove("closed");
-            settingsButton.classList.add("open");
-        }
-    });
+                    // Update button classes
+                    settingsButton.classList.remove("closed");
+                    settingsButton.classList.add("open");
+                }
+            } else if (settingsPopOut) {
+                // For newtab.html structure - toggle pop-out visibility
+                settingsPopOut.classList.toggle("expanded");
+            }
+        });
+    }
 
     // Add event listeners for dropdowns
     const siteCountSelect = document.getElementById('siteCount');
@@ -1690,16 +1833,20 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Dev pull-out functionality
-    const devPullOut = document.querySelector('.dev-pull-out');
-    const devPullOutTab = document.querySelector('.dev-pull-out-tab');
-    const devIcon = document.querySelector('.dev-icon');
-    
-    if (devPullOutTab) {
-        devPullOutTab.addEventListener('click', function(e) {
-            e.preventDefault();
-            devPullOut.classList.toggle('expanded');
-            devIcon.classList.toggle('fa-caret-right');
-            devIcon.classList.toggle('fa-caret-left');
+    const devPullOut = document.querySelector('.dev-pull-out-tab');
+    const popOut = document.querySelector('.pop-out');
+    const caretIcon = document.querySelector('.dev-pull-out-tab i');
+
+    if (devPullOut && popOut && caretIcon) {
+        devPullOut.addEventListener('click', () => {
+            popOut.classList.toggle('hidden');
+            
+            // Change caret direction based on hidden state
+            if (popOut.classList.contains('hidden')) {
+                caretIcon.className = 'fa-solid fa-caret-right';
+            } else {
+                caretIcon.className = 'fa-solid fa-caret-left';
+            }
         });
     }
 
@@ -1716,33 +1863,22 @@ document.addEventListener("DOMContentLoaded", function () {
                              bookmarkContainer.style.opacity !== "0";
             
             if (!isVisible) {
-                // Show the container with slide-down animation
+                // Show the container with fade-in animation
                 bookmarkContainer.style.visibility = "visible";
                 bookmarkContainer.style.opacity = "0";
-                bookmarkContainer.style.transform = "translateY(-100%)";
                 
                 // Force reflow
                 bookmarkContainer.offsetHeight;
                 
                 // Animate to visible state
-                bookmarkContainer.style.transition = "opacity 0.3s ease, transform 0.3s ease";
                 bookmarkContainer.style.opacity = "1";
-                bookmarkContainer.style.transform = "translateY(0)";
-                
-                // Remove transition after animation
-                setTimeout(() => {
-                    bookmarkContainer.style.transition = "";
-                }, 300);
             } else {
-                // Hide the container with slide-up animation
-                bookmarkContainer.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+                // Hide the container with fade-out animation
                 bookmarkContainer.style.opacity = "0";
-                bookmarkContainer.style.transform = "translateY(-100%)";
                 
                 // Hide after animation completes
                 setTimeout(() => {
                     bookmarkContainer.style.visibility = "hidden";
-                    bookmarkContainer.style.transition = "";
                 }, 300);
             }
         });
@@ -1750,63 +1886,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-function displayToolTip(element, icon1, icon2, action = null) {
-    const tooltip = document.getElementById(element);
-    let tooltipTimeout;
-
-    if (element === 'passwords' || element === 'history') {
-        tooltip.addEventListener('click', function (e) {
-            e.preventDefault();
-            chrome.tabs.create({ url: action });
-        });
-    }
-
-    tooltip.addEventListener('mouseenter', function (e) {
-        const tooltip = this.parentElement.firstElementChild;
-        const icon = this.firstElementChild;
-
-        // Clear any existing timeout
-        clearTimeout(tooltipTimeout);
-
-        // Remove hiding class and stop any ongoing animation
-        tooltip.classList.remove('hiding');
-        tooltip.style.visibility = 'visible';
-
-        // Apply the animation after a tiny delay
-        requestAnimationFrame(() => {
-            icon.classList.remove(icon1);
-            icon.classList.add(icon2);
-            tooltip.classList.add('visible');
-        });
-    });
-
-    tooltip.addEventListener('mouseleave', function (e) {
-        const tooltip = this.parentElement.firstElementChild;
-        const icon = this.firstElementChild;
-
-        // Change icon back
-        icon.classList.remove(icon2);
-        icon.classList.add(icon1);
-
-        // Apply hiding animation
-        tooltip.classList.remove('visible');
-        tooltip.classList.add('hiding');
-
-        // Set a timeout to hide the tooltip after animation completes
-        tooltipTimeout = setTimeout(() => {
-            tooltip.classList.remove('hiding');
-            tooltip.style.visibility = 'hidden';
-        }, 200); // Match this with your CSS animation duration
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-
-
-    displayToolTip('passwords', 'fa-lock', 'fa-unlock', 'chrome://password-manager/passwords');
-    displayToolTip('history', 'fa-book-open', 'fa-book-open-reader', 'chrome://history/');
-    displayToolTip('settings', 'fa-gear', 'fa-gears');
-    displayToolTip('bookmarks', 'fa-bookmark', 'fa-bookmark');
-
-
-});
